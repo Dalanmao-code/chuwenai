@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>楚镜AI — 非遗纹样 · 传承创新</title>
+    <link rel="stylesheet" href="css/style.css?v=20250520">
+    <style>
+        /* 兜底关键样式 —— 防止外部 CSS 未加载时页面完全无样式 */
+        #homeParticles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+        .home-page { position: relative; z-index: 1; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            overflow-y: auto; overflow-x: hidden; height: auto;
+            font-family: "PingFang SC", "Noto Serif SC", "Microsoft YaHei", sans-serif;
+            background: #FBF9F4; color: #2D2D2D; line-height: 1.7;
+        }
+        .home-page { min-height: 100vh; display: flex; flex-direction: column; background: #FBF9F4; }
+        .home-header { position: sticky; top: 0; z-index: 100; background: linear-gradient(180deg, rgba(26,16,8,0.97), rgba(45,24,16,0.97)); border-bottom: 1px solid rgba(201,168,76,0.15); }
+        .home-header-inner { max-width: 1280px; margin: 0 auto; padding: 0 32px; height: 64px; display: flex; align-items: center; gap: 40px; }
+        .home-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; flex-shrink: 0; }
+        .home-brand .brand-icon { width: 40px; height: 40px; background: #C53D43; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; color: #FBF9F4; }
+        .home-brand .brand-logo { width: 40px; height: 40px; border-radius: 2px; object-fit: contain; flex-shrink: 0; }
+        .brand-text { font-size: 18px; font-weight: 700; color: #C9A84C; letter-spacing: 3px; }
+        .brand-tagline { font-size: 10px; color: rgba(201,168,76,0.45); letter-spacing: 2px; }
+        .home-nav { display: flex; gap: 4px; flex: 1; justify-content: center; }
+        .home-nav-link { padding: 8px 20px; border-radius: 2px; color: rgba(245,240,232,0.65); text-decoration: none; font-size: 14px; letter-spacing: 2px; }
+        .home-nav-link.active { color: #C9A84C; }
+        .home-header-right { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+        .home-user-name { font-size: 13px; color: rgba(245,240,232,0.8); }
+        .home-user-avatar { width: 32px; height: 32px; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; background: #C53D43; }
+        .home-logout-btn { padding: 7px 16px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.12); background: transparent; color: rgba(245,240,232,0.5); cursor: pointer; font-size: 12px; }
+        .home-menu-toggle { display: none; width: 36px; height: 36px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.15); background: transparent; color: rgba(245,240,232,0.6); font-size: 20px; cursor: pointer; align-items: center; justify-content: center; flex-shrink: 0; }
+        .home-menu-toggle:hover { border-color: rgba(201,168,76,0.4); color: var(--gold); }
+        /* 移动端导航遮罩 */
+        .home-nav-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 150; }
+        .home-nav-overlay.open { display: block; }
+        /* 移动端导航面板 */
+        .home-nav-panel { position: fixed; top: 0; right: -280px; width: 280px; height: 100%; background: linear-gradient(180deg, #1a1008 0%, #2d1810 30%, #1a1610 100%); border-left: 1px solid rgba(201,168,76,0.2); z-index: 151; transition: right 0.3s ease; padding: 24px 20px; display: flex; flex-direction: column; gap: 4px; }
+        .home-nav-panel.open { right: 0; }
+        .home-nav-panel .panel-close { align-self: flex-end; width: 36px; height: 36px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.12); background: transparent; color: rgba(245,240,232,0.5); font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+        .home-nav-panel .panel-link { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 2px; color: rgba(245,240,232,0.65); text-decoration: none; font-size: 14px; letter-spacing: 2px; transition: all 0.2s; }
+        .home-nav-panel .panel-link:hover { background: rgba(201,168,76,0.08); color: var(--gold-light); }
+        .home-nav-panel .panel-link.active { background: rgba(197,61,67,0.2); color: var(--paper); border-left: 3px solid var(--vermillion); }
+        .home-user-area { position: relative; }
+        #userInfoTrigger { cursor: pointer; padding: 4px 8px; border-radius: 2px; transition: background 0.2s; }
+        #userInfoTrigger:hover { background: rgba(255,255,255,0.05); }
+        .user-dropdown { position: absolute; top: calc(100% + 14px); right: 0; width: 280px; background: linear-gradient(180deg, rgba(26,16,8,0.98) 0%, rgba(45,24,16,0.98) 100%); border: 1px solid rgba(201,168,76,0.25); border-radius: 2px; box-shadow: 0 16px 48px rgba(0,0,0,0.5); z-index: 200; opacity: 0; visibility: hidden; transform: translateY(-8px); transition: all 0.25s ease; pointer-events: none; }
+        .user-dropdown.open { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+        .dropdown-arrow { position: absolute; top: -7px; right: 24px; width: 12px; height: 12px; background: rgba(26,16,8,0.98); border-left: 1px solid rgba(201,168,76,0.25); border-top: 1px solid rgba(201,168,76,0.25); transform: rotate(45deg); }
+        .dropdown-header { display: flex; align-items: center; gap: 14px; padding: 20px 20px 16px; border-bottom: 1px solid rgba(201,168,76,0.1); }
+        .dropdown-avatar { width: 48px; height: 48px; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; color: #fff; background: #C53D43; flex-shrink: 0; box-shadow: 2px 2px 0 rgba(139,38,49,0.4); }
+        .dropdown-name-group { overflow: hidden; }
+        .dropdown-display-name { display: block; font-size: 15px; font-weight: 600; color: #F5F0E8; letter-spacing: 2px; }
+        .dropdown-role { display: inline-block; font-size: 11px; padding: 2px 10px; border-radius: 2px; background: rgba(201,168,76,0.15); color: #C9A84C; letter-spacing: 2px; margin-top: 4px; }
+        .dropdown-body { padding: 12px 20px; border-bottom: 1px solid rgba(201,168,76,0.08); }
+        .dropdown-info-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
+        .dropdown-info-row .info-label { font-size: 12px; color: rgba(245,240,232,0.4); letter-spacing: 1px; }
+        .dropdown-info-row .info-value { font-size: 12px; color: rgba(245,240,232,0.7); letter-spacing: 1px; }
+        .dropdown-footer { padding: 10px 20px; }
+        .dropdown-logout-btn { width: 100%; padding: 9px; border-radius: 2px; border: 1px solid rgba(197,61,67,0.3); background: rgba(197,61,67,0.1); color: #E8A5A8; cursor: pointer; font-size: 12px; letter-spacing: 2px; transition: all 0.2s; }
+        .dropdown-logout-btn:hover { background: rgba(197,61,67,0.25); border-color: rgba(197,61,67,0.5); color: #fff; }
+        .hero-section { background: #1a1008; }
+        .carousel { position: relative; max-width: 1280px; margin: 0 auto; height: 520px; overflow: hidden; }
+        .carousel-track { position: relative; width: 100%; height: 100%; }
+        .carousel-slide { position: absolute; inset: 0; opacity: 0; transition: opacity 0.8s ease; pointer-events: none; }
+        .carousel-slide.active { opacity: 1; pointer-events: auto; }
+        .slide-inner { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+        .slide-1 { background: linear-gradient(160deg, #1a1008 0%, #2d1810 35%, #1a1008 60%, #1a1610 100%); }
+        .slide-2 { background: linear-gradient(160deg, #1a1610 0%, #1a1008 30%, #2d1810 65%, #1a1008 100%); }
+        .slide-3 { background: linear-gradient(160deg, #2d1810 0%, #1a1008 40%, #1a1610 70%, #1a1008 100%); }
+        .slide-content { position: relative; z-index: 2; text-align: center; padding: 40px; }
+        .slide-heading { font-size: 48px; font-weight: 900; letter-spacing: 8px; margin: 0 0 16px 0; }
+        .slide-heading-light { color: #F5F0E8; }
+        .slide-heading-accent { color: #C9A84C; }
+        .slide-subtitle { font-size: 18px; color: rgba(201,168,76,0.7); letter-spacing: 4px; margin: 0 0 20px 0; }
+        .slide-description { font-size: 14px; color: rgba(245,240,232,0.5); letter-spacing: 2px; line-height: 2; margin: 0 0 32px 0; }
+        .slide-btn { display: inline-flex; align-items: center; gap: 8px; padding: 14px 36px; border-radius: 2px; font-size: 15px; font-weight: 600; letter-spacing: 3px; text-decoration: none; }
+        .slide-btn-primary { background: #C53D43; color: #fff; }
+        .slide-btn-ghost { background: transparent; color: rgba(245,240,232,0.6); border: 1px solid rgba(245,240,232,0.2); }
+        .carousel-arrow { position: absolute; top: 50%; transform: translateY(-50%); z-index: 10; width: 48px; height: 48px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.3); color: rgba(245,240,232,0.5); font-size: 28px; cursor: pointer; }
+        .carousel-arrow-left { left: 24px; }
+        .carousel-arrow-right { right: 24px; }
+        .carousel-indicators { position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; z-index: 10; }
+        .carousel-dot { width: 32px; height: 4px; border-radius: 2px; border: none; background: rgba(245,240,232,0.2); cursor: pointer; }
+        .carousel-dot.active { background: #C9A84C; width: 48px; }
+        .section-container { max-width: 1200px; margin: 0 auto; padding: 80px 32px; }
+        .section-title { font-size: 28px; font-weight: 700; color: #2D2D2D; letter-spacing: 4px; text-align: center; }
+        .section-desc { font-size: 14px; color: #6B5E53; letter-spacing: 2px; text-align: center; }
+        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 48px; }
+        .feature-card { background: #fff; border: 1px solid #D8D0C0; border-radius: 2px; padding: 36px 28px; display: flex; flex-direction: column; }
+        .feature-title { font-size: 18px; font-weight: 700; color: #2D2D2D; letter-spacing: 2px; margin-bottom: 10px; }
+        .feature-desc { font-size: 13px; color: #6B5E53; line-height: 1.8; }
+        .feature-link { display: inline-flex; align-items: center; gap: 6px; padding: 10px 24px; border-radius: 2px; border: 1px solid #D8D0C0; color: #2D2D2D; text-decoration: none; font-size: 13px; font-weight: 600; letter-spacing: 2px; margin-top: 16px; }
+        .workflow-steps { display: flex; align-items: flex-start; justify-content: center; gap: 0; max-width: 1000px; margin: 48px auto 0; }
+        .workflow-step { flex: 1; max-width: 260px; text-align: center; }
+        .step-title { font-size: 16px; font-weight: 700; color: #2D2D2D; letter-spacing: 2px; }
+        .step-desc { font-size: 13px; color: #6B5E53; line-height: 1.8; margin-top: 8px; }
+        .cta-section { background: linear-gradient(160deg, #1a1008 0%, #2d1810 40%, #1a1008 100%); padding: 72px 32px; text-align: center; }
+        .cta-title { font-size: 32px; font-weight: 700; color: #F5F0E8; letter-spacing: 6px; }
+        .cta-desc { font-size: 15px; color: rgba(245,240,232,0.5); letter-spacing: 3px; margin: 16px 0 36px; }
+        .cta-btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 16px 44px; border-radius: 2px; background: #C53D43; color: #fff; font-size: 16px; font-weight: 600; letter-spacing: 3px; text-decoration: none; }
+        .home-footer { background: linear-gradient(180deg, #1a1610 0%, #1a1008 100%); padding: 48px 32px 24px; text-align: center; color: rgba(245,240,232,0.2); font-size: 12px; }
+        @media (max-width: 768px) {
+            .home-nav { display: none; }
+            .home-menu-toggle { display: flex; }
+            .home-header-right .home-logout-btn { display: none; }
+            .features-grid { grid-template-columns: 1fr; }
+            .workflow-steps { flex-direction: column; align-items: center; }
+            .carousel { height: 440px; }
+            .slide-heading { font-size: 32px; }
+        }
+    </style>
+</head>
+<body>
+<canvas id="homeParticles"></canvas>
+<div class="home-page">
+
+    <!-- ==================== 顶部导航 ==================== -->
+    <header class="home-header" id="homeHeader">
+        <div class="home-header-inner">
+            <a href="home.html" class="home-brand">
+                <img src="images/logo.png" alt="楚镜AI" class="brand-logo" width="40" height="40">
+                <div class="brand-text-group">
+                    <span class="brand-text">楚镜 AI</span>
+                    <span class="brand-tagline">非遗纹样 · 传承创新</span>
+                </div>
+            </a>
+            <nav class="home-nav" id="homeNav">
+                <a href="home.html" class="home-nav-link active">主页</a>
+                <a href="patterns-library.html" class="home-nav-link">纹样库</a>
+                <a href="chat.html" class="home-nav-link">灵感顾问</a>
+                <a href="patterns.html" class="home-nav-link">AI设计师</a>
+                <a href="ai-video.html" class="home-nav-link">AI视频</a>
+                <a href="free-create.html" class="home-nav-link">自由创作</a>
+                <a href="product-showcase.html" class="home-nav-link">产品展示</a>
+                <a href="member-center.html" class="home-nav-link">会员中心</a>
+            </nav>
+            <!-- 移动端菜单按钮 -->
+            <button class="home-menu-toggle" id="homeMenuToggle" aria-label="菜单">&#9776;</button>
+            <div class="home-header-right">
+                <div class="home-user-area" id="userArea">
+                    <div class="home-user-info" id="userInfoTrigger">
+                        <span class="home-user-name" id="headerUserName"></span>
+                        <span class="home-user-avatar" id="headerAvatar"></span>
+                    </div>
+                    <!-- 用户信息下拉面板 -->
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="dropdown-arrow"></div>
+                        <div class="dropdown-header">
+                            <div class="dropdown-avatar" id="dropdownAvatar"></div>
+                            <div class="dropdown-name-group">
+                                <span class="dropdown-display-name" id="dropdownName"></span>
+                                <span class="dropdown-role" id="dropdownRole"></span>
+                            </div>
+                        </div>
+                        <div class="dropdown-body">
+                            <div class="dropdown-info-row">
+                                <span class="info-label">用户名</span>
+                                <span class="info-value" id="dropdownUsername"></span>
+                            </div>
+                            <div class="dropdown-info-row">
+                                <span class="info-label">注册时间</span>
+                                <span class="info-value" id="dropdownCreatedAt"></span>
+                            </div>
+                            <div class="dropdown-info-row">
+                                <span class="info-label">用户 ID</span>
+                                <span class="info-value" id="dropdownUserId"></span>
+                            </div>
+                        </div>
+                        <div class="dropdown-footer">
+                            <button class="dropdown-logout-btn" onclick="handleLogout()">退出登录</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 移动端导航遮罩 + 侧滑面板 -->
+    <div class="home-nav-overlay" id="homeNavOverlay"></div>
+    <div class="home-nav-panel" id="homeNavPanel">
+        <button class="panel-close" id="panelClose">&times;</button>
+        <a href="home.html" class="panel-link active">&#127968; 主页</a>
+        <a href="patterns-library.html" class="panel-link">&#128218; 纹样库</a>
+        <a href="chat.html" class="panel-link">&#128172; 灵感顾问</a>
+        <a href="patterns.html" class="panel-link">&#127912; AI设计师</a>
+        <a href="ai-video.html" class="panel-link">&#127916; AI视频</a>
+        <a href="free-create.html" class="panel-link">&#127917; 自由创作</a>
+        <a href="product-showcase.html" class="panel-link">&#128230; 产品展示</a>
+        <a href="member-center.html" class="panel-link">&#128100; 会员中心</a>
+    </div>
+
+    <!-- ==================== 轮播图区域 ==================== -->
+    <section class="hero-section">
+        <div class="carousel" id="heroCarousel">
+            <!-- 轮播容器 -->
+            <div class="carousel-track" id="carouselTrack">
+                <!-- 第一屏：品牌介绍 -->
+                <div class="carousel-slide active" data-index="0">
+                    <div class="slide-inner slide-1">
+                        <div class="slide-decoration slide-dec-left"></div>
+                        <div class="slide-decoration slide-dec-right"></div>
+                        <div class="slide-content">
+                            <div class="slide-ornament">
+                                <span class="ornament-line"></span>
+                                <span class="ornament-diamond">◆</span>
+                                <span class="ornament-line"></span>
+                            </div>
+                            <h1 class="slide-heading">
+                                <span class="slide-heading-light">楚镜</span>
+                                <span class="slide-heading-accent">AI</span>
+                            </h1>
+                            <p class="slide-subtitle">非遗纹样 · 传承创新</p>
+                            <p class="slide-description">
+                                融合 DeepSeek 大模型与豆包 Seedream 图像生成能力<br>
+                                为传统纹样的研究、创作与传承提供一站式智能平台
+                            </p>
+                            <div class="slide-actions">
+                                <a href="chat.html" class="slide-btn slide-btn-primary">开始探索 &#10140;</a>
+                                <a href="#features" class="slide-btn slide-btn-ghost">了解更多 &#8595;</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 第二屏：灵感顾问 -->
+                <div class="carousel-slide" data-index="1">
+                    <div class="slide-inner slide-2">
+                        <div class="slide-decoration slide-dec-left"></div>
+                        <div class="slide-decoration slide-dec-right"></div>
+                        <div class="slide-content">
+                            <div class="slide-ornament">
+                                <span class="ornament-line"></span>
+                                <span class="ornament-diamond">◆</span>
+                                <span class="ornament-line"></span>
+                            </div>
+                            <p class="slide-tag">AI 智能对话</p>
+                            <h2 class="slide-heading">
+                                <span class="slide-heading-accent">灵感</span>
+                                <span class="slide-heading-light">顾问</span>
+                            </h2>
+                            <p class="slide-subtitle">DeepSeek 大模型驱动</p>
+                            <p class="slide-description">
+                                智能纹样问答、风格分析解读、创作灵感建议<br>
+                                随时随地探索传统纹样之美
+                            </p>
+                            <div class="slide-actions">
+                                <a href="chat.html" class="slide-btn slide-btn-primary">立即对话 &#10140;</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 第三屏：AI设计师 -->
+                <div class="carousel-slide" data-index="2">
+                    <div class="slide-inner slide-3">
+                        <div class="slide-decoration slide-dec-left"></div>
+                        <div class="slide-decoration slide-dec-right"></div>
+                        <div class="slide-content">
+                            <div class="slide-ornament">
+                                <span class="ornament-line"></span>
+                                <span class="ornament-diamond">◆</span>
+                                <span class="ornament-line"></span>
+                            </div>
+                            <p class="slide-tag">AI 图像生成</p>
+                            <h2 class="slide-heading">
+                                <span class="slide-heading-accent">AI</span>
+                                <span class="slide-heading-light">设计师</span>
+                            </h2>
+                            <p class="slide-subtitle">豆包 Seedream 模型驱动</p>
+                            <p class="slide-description">
+                                基于经典参考纹样，AI 为您创作独一无二的传统纹样设计<br>
+                                支持风格融合与高清图片下载
+                            </p>
+                            <div class="slide-actions">
+                                <a href="patterns.html" class="slide-btn slide-btn-primary">开始创作 &#10140;</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 左右箭头 -->
+            <button class="carousel-arrow carousel-arrow-left" id="carouselPrev">&#8249;</button>
+            <button class="carousel-arrow carousel-arrow-right" id="carouselNext">&#8250;</button>
+
+            <!-- 指示器 -->
+            <div class="carousel-indicators" id="carouselIndicators">
+                <button class="carousel-dot active" data-index="0"></button>
+                <button class="carousel-dot" data-index="1"></button>
+                <button class="carousel-dot" data-index="2"></button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 核心功能介绍 ==================== -->
+    <section class="features-section" id="features">
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">核心功能</h2>
+                <p class="section-desc">为您提供全方位的纹样智能服务</p>
+                <div class="section-divider">
+                    <span class="divider-dot">◆</span>
+                </div>
+            </div>
+            <div class="features-grid">
+                <!-- 功能卡片 1 -->
+                <div class="feature-card">
+                    <div class="feature-icon feature-icon-chat">
+                        <span>&#128172;</span>
+                    </div>
+                    <h3 class="feature-title">灵感顾问</h3>
+                    <p class="feature-desc">基于 DeepSeek 大模型的智能对话系统，为您解答纹样相关问题，提供风格分析与创作建议。</p>
+                    <ul class="feature-list">
+                        <li>智能纹样知识问答</li>
+                        <li>纹样风格解读分析</li>
+                        <li>传统文化知识科普</li>
+                    </ul>
+                    <a href="chat.html" class="feature-link">开始对话 &#10140;</a>
+                </div>
+
+                <!-- 功能卡片 2 -->
+                <div class="feature-card">
+                    <div class="feature-icon feature-icon-image">
+                        <span>&#127912;</span>
+                    </div>
+                    <h3 class="feature-title">AI设计师</h3>
+                    <p class="feature-desc">搭载豆包 Seedream 图像生成模型，基于经典纹样参考图，为您生成精美的原创纹样设计。</p>
+                    <ul class="feature-list">
+                        <li>经典纹样参考生成</li>
+                        <li>多风格融合创作</li>
+                        <li>高清图片预览下载</li>
+                    </ul>
+                    <a href="patterns.html" class="feature-link">开始创作 &#10140;</a>
+                </div>
+
+                <!-- 功能卡片 3 -->
+                <div class="feature-card">
+                    <div class="feature-icon feature-icon-library">
+                        <span>&#128218;</span>
+                    </div>
+                    <h3 class="feature-title">纹样库</h3>
+                    <p class="feature-desc">汇集丰富多样的经典纹样参考图库，涵盖云纹、回纹、莲花纹等多种传统纹样类型。</p>
+                    <ul class="feature-list">
+                        <li>经典纹样图库浏览</li>
+                        <li>文化内涵背景解读</li>
+                        <li>图库内容持续扩充</li>
+                    </ul>
+                    <a href="patterns-library.html" class="feature-link">浏览图库 &#10140;</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 使用流程 ==================== -->
+    <section class="workflow-section">
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">使用流程</h2>
+                <p class="section-desc">简单三步，开启纹样智能之旅</p>
+                <div class="section-divider">
+                    <span class="divider-dot">◆</span>
+                </div>
+            </div>
+            <div class="workflow-steps">
+                <div class="workflow-step">
+                    <div class="step-number">01</div>
+                    <div class="step-icon-wrap">
+                        <span class="step-icon">&#128269;</span>
+                    </div>
+                    <h3 class="step-title">选择功能</h3>
+                    <p class="step-desc">根据您的需求，选择灵感顾问进行智能问答，或进入AI设计师生成精美纹样。</p>
+                </div>
+
+                <div class="workflow-connector">
+                    <span class="connector-line"></span>
+                    <span class="connector-arrow">&#10140;</span>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-number">02</div>
+                    <div class="step-icon-wrap">
+                        <span class="step-icon">&#9881;</span>
+                    </div>
+                    <h3 class="step-title">AI 智能处理</h3>
+                    <p class="step-desc">DeepSeek 大模型与豆包 Seedream 图像生成模型协同工作，为您提供专业的智能服务。</p>
+                </div>
+
+                <div class="workflow-connector">
+                    <span class="connector-line"></span>
+                    <span class="connector-arrow">&#10140;</span>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-number">03</div>
+                    <div class="step-icon-wrap">
+                        <span class="step-icon">&#127775;</span>
+                    </div>
+                    <h3 class="step-title">获得成果</h3>
+                    <p class="step-desc">获取专业的纹样知识解答与精美的原创纹样设计，感受传统文化与人工智能的完美融合。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== CTA 横幅 ==================== -->
+    <section class="cta-section">
+        <div class="cta-inner">
+            <div class="cta-decoration cta-dec-left"></div>
+            <div class="cta-decoration cta-dec-right"></div>
+            <h2 class="cta-title">传承千年纹样之美</h2>
+            <p class="cta-desc">借助人工智能技术，让传统纹样在数字时代焕发新生</p>
+            <div class="cta-actions">
+                <a href="chat.html" class="cta-btn cta-btn-primary">免费开始使用 &#10140;</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 页脚 ==================== -->
+    <footer class="home-footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <span class="footer-brand-icon">楚</span>
+                <div>
+                    <div class="footer-brand-name">楚镜 AI</div>
+                    <div class="footer-brand-desc">非遗纹样 · 传承创新</div>
+                </div>
+            </div>
+            <div class="footer-links">
+                <div class="footer-col">
+                    <h4>功能导航</h4>
+                    <a href="home.html">主页</a>
+                    <a href="patterns-library.html">纹样库</a>
+                    <a href="chat.html">灵感顾问</a>
+                    <a href="patterns.html">AI设计师</a>
+                    <a href="ai-video.html">AI视频</a>
+                    <a href="free-create.html">自由创作</a>
+                    <a href="product-showcase.html">产品展示</a>
+                    <a href="member-center.html">会员中心</a>
+                </div>
+                <div class="footer-col">
+                    <h4>技术驱动</h4>
+                    <span>DeepSeek 大模型</span>
+                    <span>豆包 Seedream</span>
+                    <span>Jakarta EE 6</span>
+                    <span>H2 数据库</span>
+                </div>
+                <div class="footer-col">
+                    <h4>关于我们</h4>
+                    <span>传承非遗文化</span>
+                    <span>融合AI前沿科技</span>
+                    <span>专注纹样数字化</span>
+                    <span>让传统焕发新生</span>
+                </div>
+                <div class="footer-col">
+                    <h4>帮助支持</h4>
+                    <span>新手指南</span>
+                    <span>常见问题</span>
+                    <span>使用教程</span>
+                    <span>意见反馈</span>
+                </div>
+                <div class="footer-col">
+                    <h4>联系方式</h4>
+                    <span>邮箱: service@chujing.ai</span>
+                    <span>公众号: 楚镜AI</span>
+                    <span>工作时间: 9:00-18:00</span>
+                    <span>竭诚为您服务</span>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>&copy; 2025 楚镜 AI. 非遗纹样智能平台.</span>
+            </div>
+        </div>
+    </footer>
+
+</div>
+
+<!-- Toast -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="js/api.js"></script>
+<script>
+(function() {
+    // ========== 用户信息 ==========
+    var currentUser = null;
+
+    function loadUserInfo() {
+        API.getUserInfo()
+            .then(function(user) {
+                if (user) {
+                    currentUser = user;
+                    var displayName = user.displayName || user.username;
+                    // Header info
+                    document.getElementById('headerUserName').textContent = displayName;
+                    var avatar = document.getElementById('headerAvatar');
+                    avatar.textContent = displayName.charAt(0);
+                    avatar.style.background = user.avatarColor || '#C53D43';
+                    // Dropdown info
+                    document.getElementById('dropdownAvatar').textContent = displayName.charAt(0);
+                    document.getElementById('dropdownAvatar').style.background = user.avatarColor || '#C53D43';
+                    document.getElementById('dropdownName').textContent = displayName;
+                    document.getElementById('dropdownRole').textContent = user.role === 'admin' ? '管理员' : '用户';
+                    document.getElementById('dropdownUsername').textContent = user.username;
+                    document.getElementById('dropdownUserId').textContent = user.id;
+                    document.getElementById('dropdownCreatedAt').textContent = user.createdAt || '—';
+                }
+            })
+            .catch(function() {
+                window.location.href = 'index.html';
+            });
+    }
+    loadUserInfo();
+
+    window.handleLogout = function() {
+        API.logout()
+            .then(function() { window.location.href = 'index.html'; })
+            .catch(function() { window.location.href = 'index.html'; });
+    };
+
+    // ========== 用户下拉面板 ==========
+    var userTrigger = document.getElementById('userInfoTrigger');
+    var userDropdown = document.getElementById('userDropdown');
+    var dropdownOpen = false;
+
+    function openDropdown() {
+        userDropdown.classList.add('open');
+        dropdownOpen = true;
+        // 刷新用户数据
+        if (currentUser) {
+            document.getElementById('dropdownAvatar').textContent = (currentUser.displayName || currentUser.username).charAt(0);
+            document.getElementById('dropdownAvatar').style.background = currentUser.avatarColor || '#C53D43';
+        }
+    }
+
+    function closeDropdown() {
+        userDropdown.classList.remove('open');
+        dropdownOpen = false;
+    }
+
+    userTrigger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (dropdownOpen) {
+            closeDropdown();
+        } else {
+            openDropdown();
+        }
+    });
+
+    // 点击面板外部关闭
+    document.addEventListener('click', function(e) {
+        if (dropdownOpen && !userDropdown.contains(e.target) && e.target !== userTrigger) {
+            closeDropdown();
+        }
+    });
+
+    // ========== 移动端菜单 ==========
+    var menuToggle = document.getElementById('homeMenuToggle');
+    var navOverlay = document.getElementById('homeNavOverlay');
+    var navPanel = document.getElementById('homeNavPanel');
+    var panelClose = document.getElementById('panelClose');
+
+    function openMobileMenu() {
+        navOverlay.classList.add('open');
+        navPanel.classList.add('open');
+    }
+
+    function closeMobileMenu() {
+        navOverlay.classList.remove('open');
+        navPanel.classList.remove('open');
+    }
+
+    menuToggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        openMobileMenu();
+    });
+
+    panelClose.addEventListener('click', closeMobileMenu);
+    navOverlay.addEventListener('click', closeMobileMenu);
+
+    // ========== 轮播图逻辑 ==========
+    var currentIndex = 0;
+    var totalSlides = 3;
+    var autoplayInterval = null;
+    var autoplayDelay = 5000;
+
+    var track = document.getElementById('carouselTrack');
+    var slides = track.querySelectorAll('.carousel-slide');
+    var dots = document.querySelectorAll('.carousel-dot');
+    var prevBtn = document.getElementById('carouselPrev');
+    var nextBtn = document.getElementById('carouselNext');
+    var carousel = document.getElementById('heroCarousel');
+
+    function goToSlide(index) {
+        if (index === currentIndex) return;
+        if (index < 0) index = totalSlides - 1;
+        if (index >= totalSlides) index = 0;
+
+        // 移除旧激活状态
+        slides[currentIndex].classList.remove('active');
+        dots[currentIndex].classList.remove('active');
+
+        // 设置新激活状态
+        currentIndex = index;
+        slides[currentIndex].classList.add('active');
+        dots[currentIndex].classList.add('active');
+    }
+
+    function nextSlide() { goToSlide(currentIndex + 1); }
+    function prevSlide() { goToSlide(currentIndex - 1); }
+
+    function startAutoplay() {
+        stopAutoplay();
+        autoplayInterval = setInterval(nextSlide, autoplayDelay);
+    }
+
+    function stopAutoplay() {
+        if (autoplayInterval) {
+            clearInterval(autoplayInterval);
+            autoplayInterval = null;
+        }
+    }
+
+    // 箭头按钮
+    prevBtn.addEventListener('click', function() {
+        prevSlide();
+        startAutoplay();
+    });
+    nextBtn.addEventListener('click', function() {
+        nextSlide();
+        startAutoplay();
+    });
+
+    // 指示器点击
+    dots.forEach(function(dot) {
+        dot.addEventListener('click', function() {
+            var idx = parseInt(this.getAttribute('data-index'));
+            goToSlide(idx);
+            startAutoplay();
+        });
+    });
+
+    // 悬停暂停
+    carousel.addEventListener('mouseenter', stopAutoplay);
+    carousel.addEventListener('mouseleave', startAutoplay);
+
+    // 键盘左右键
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowLeft') { prevSlide(); startAutoplay(); }
+        if (e.key === 'ArrowRight') { nextSlide(); startAutoplay(); }
+    });
+
+    // 启动
+    startAutoplay();
+
+    // ========== 动态粒子背景 ==========
+    var particleCanvas = document.getElementById('homeParticles');
+    var pctx = particleCanvas.getContext('2d');
+    var particles = [];
+    var particleCount = 80;
+
+    function resizeParticles() {
+        particleCanvas.width = window.innerWidth;
+        particleCanvas.height = window.innerHeight;
+    }
+    resizeParticles();
+    window.addEventListener('resize', resizeParticles);
+
+    // 粒子颜色 —— 金色、朱砂暖光、白色微光
+    var particleColors = [
+        { r: 201, g: 168, b: 76 },   // 金色
+        { r: 197, g: 61,  b: 67 },   // 朱砂
+        { r: 240, g: 224, b: 160 },  // 浅金
+        { r: 255, g: 255, b: 255 },  // 白色
+    ];
+
+    function randomColor() {
+        return particleColors[Math.floor(Math.random() * particleColors.length)];
+    }
+
+    function createParticle(startY) {
+        var color = randomColor();
+        return {
+            x: Math.random() * particleCanvas.width,
+            y: startY !== undefined ? startY : Math.random() * particleCanvas.height,
+            size: Math.random() * 2.5 + 0.8,
+            speed: Math.random() * 0.5 + 0.15,
+            opacity: Math.random() * 0.35 + 0.06,
+            wobble: Math.random() * Math.PI * 2,
+            wobbleSpeed: (Math.random() - 0.5) * 0.015,
+            color: color,
+            glow: Math.random() < 0.25  // 25% 的粒子带发光效果
+        };
+    }
+
+    // 初始化粒子
+    for (var i = 0; i < particleCount; i++) {
+        particles.push(createParticle());
+    }
+
+    function animateParticles() {
+        pctx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+
+        for (var i = 0; i < particles.length; i++) {
+            var p = particles[i];
+
+            // 向上浮动
+            p.y -= p.speed;
+            // 水平微摆
+            p.wobble += p.wobbleSpeed;
+            p.x += Math.sin(p.wobble) * 0.4;
+
+            // 穿出顶部则从底部重新出现
+            if (p.y < -10) {
+                particles[i] = createParticle(particleCanvas.height + 10);
+                continue;
+            }
+            // 超出左右边界则回绕
+            if (p.x < -10) p.x = particleCanvas.width + 10;
+            if (p.x > particleCanvas.width + 10) p.x = -10;
+
+            // 绘制发光粒子
+            if (p.glow) {
+                var gradient = pctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 3);
+                gradient.addColorStop(0, 'rgba(' + p.color.r + ',' + p.color.g + ',' + p.color.b + ',' + (p.opacity * 0.7) + ')');
+                gradient.addColorStop(1, 'rgba(' + p.color.r + ',' + p.color.g + ',' + p.color.b + ',0)');
+                pctx.fillStyle = gradient;
+                pctx.beginPath();
+                pctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
+                pctx.fill();
+            }
+
+            // 绘制粒子核心
+            pctx.fillStyle = 'rgba(' + p.color.r + ',' + p.color.g + ',' + p.color.b + ',' + p.opacity + ')';
+            pctx.beginPath();
+            pctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            pctx.fill();
+        }
+
+        requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    // ========== Header 滚动阴影 ==========
+    var header = document.getElementById('homeHeader');
+    window.addEventListener('scroll', function() {
+        if (window.scrollY > 10) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+    });
+
+    // ========== 平滑滚动 (导航锚点) ==========
+    document.querySelectorAll('a[href^="#"]').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            var target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                e.preventDefault();
+                target.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    });
+})();
+</script>
+
+</body>
+</html>

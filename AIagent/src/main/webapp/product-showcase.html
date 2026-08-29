@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>楚镜AI — 产品展示</title>
+    <link rel="stylesheet" href="css/style.css?v=3">
+    <style>
+        .showcase-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 32px;
+        }
+        .showcase-hero {
+            text-align: center;
+            padding: 32px 20px 20px;
+            margin-bottom: 28px;
+        }
+        .showcase-hero h2 {
+            font-family: var(--font-heading);
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        .showcase-hero p {
+            font-size: 13px;
+            color: var(--text-light);
+            letter-spacing: 1px;
+            line-height: 1.8;
+            max-width: 560px;
+            margin: 0 auto;
+        }
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            padding-bottom: 40px;
+        }
+        .showcase-card {
+            background: #fff;
+            border: 1px solid #e8e0d0;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: box-shadow 0.25s, transform 0.25s;
+        }
+        .showcase-card:hover {
+            box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+            transform: translateY(-3px);
+        }
+        .showcase-card-img {
+            width: 100%;
+            aspect-ratio: 4/3;
+            overflow: hidden;
+            background: #f5f0e8;
+        }
+        .showcase-card-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s;
+        }
+        .showcase-card:hover .showcase-card-img img {
+            transform: scale(1.04);
+        }
+        .showcase-card-body {
+            padding: 14px 16px;
+        }
+        .showcase-card-title {
+            font-family: var(--font-heading);
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        .showcase-card-designer {
+            font-size: 12px;
+            color: var(--text-light);
+            letter-spacing: 1px;
+        }
+
+        /* ---- Lightbox ---- */
+        .lightbox-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.88);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .lightbox-overlay.open { display: flex; }
+        .lightbox-overlay img {
+            max-width: 90vw;
+            max-height: 78vh;
+            border-radius: 8px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+        }
+        .lightbox-info {
+            text-align: center;
+            color: #fff;
+        }
+        .lightbox-info .lightbox-title {
+            font-family: var(--font-heading);
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            margin-bottom: 4px;
+        }
+        .lightbox-info .lightbox-designer {
+            font-size: 13px;
+            color: #ccc;
+            letter-spacing: 1px;
+        }
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 28px;
+            font-size: 36px;
+            color: #fff;
+            cursor: pointer;
+            background: none;
+            border: none;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        .lightbox-close:hover { opacity: 1; }
+        .lightbox-prev, .lightbox-next {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 32px;
+            color: #fff;
+            cursor: pointer;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        .lightbox-prev:hover, .lightbox-next:hover { opacity: 1; }
+        .lightbox-prev { left: 20px; }
+        .lightbox-next { right: 20px; }
+
+        @media (max-width: 768px) {
+            .showcase-body { padding: 16px; }
+            .showcase-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="patterns-layout">
+    <!-- 左侧边栏 -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-brand"><img src="images/logo.png" alt="" class="sidebar-logo-inline" width="30" height="30">楚镜 AI</div>
+            <small>非遗纹样 · 传承创新</small>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="user-avatar" id="sidebarAvatar"></div>
+            <div class="user-info">
+                <div class="name" id="sidebarName"></div>
+                <span class="role-tag">用户</span>
+            </div>
+        </div>
+
+        <div class="sidebar-nav">
+            <a class="nav-item" href="home.html"><span class="nav-icon">&#127968;</span> 主页</a>
+            <a class="nav-item" href="patterns-library.html"><span class="nav-icon">&#128218;</span> 纹样库</a>
+            <a class="nav-item" href="chat.html"><span class="nav-icon">&#128172;</span> 灵感顾问</a>
+            <a class="nav-item" href="patterns.html"><span class="nav-icon">&#127912;</span> AI设计师</a>
+            <a class="nav-item" href="ai-video.html"><span class="nav-icon">&#127916;</span> AI视频</a>
+            <a class="nav-item" href="free-create.html"><span class="nav-icon">&#127917;</span> 自由创作</a>
+            <div class="nav-item active"><span class="nav-icon">&#128230;</span> 产品展示</div>
+            <a class="nav-item" href="member-center.html"><span class="nav-icon">&#128100;</span> 会员中心</a>
+        </div>
+
+        <div class="sidebar-footer" style="margin-top:auto;">
+            <button onclick="handleLogout()">&#10149; 退出</button>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="patterns-main">
+        <div class="patterns-header">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+                <span class="brand">产品展示</span>
+            </div>
+        </div>
+
+        <div class="showcase-body">
+            <div class="showcase-hero">
+                <h2>荆楚纹样 · 设计作品展</h2>
+                <p>以下作品均由楚镜AI平台生成，团队成员运用传统荆楚纹样结合现代设计语言，探寻非遗文化在当代文创中的新生表达。</p>
+            </div>
+            <div class="showcase-grid" id="showcaseGrid"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 灯箱 -->
+<div class="lightbox-overlay" id="lightboxOverlay" onclick="closeLightbox(event)">
+    <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+    <button class="lightbox-prev" onclick="event.stopPropagation();navigateLightbox(-1)">&#8249;</button>
+    <button class="lightbox-next" onclick="event.stopPropagation();navigateLightbox(1)">&#8250;</button>
+    <img id="lightboxImage" src="" alt="">
+    <div class="lightbox-info">
+        <div class="lightbox-title" id="lightboxTitle"></div>
+        <div class="lightbox-designer" id="lightboxDesigner"></div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="js/api.js"></script>
+<script>
+// ---- showcase data ----
+var showcaseWorks = [
+    { file: '寻味荆楚.png', title: '寻味荆楚', designer: '王欣悦' },
+    { file: '寻药大冒险.png', title: '寻药大冒险', designer: '杨龙峰' },
+    { file: '巴山叙语.png', title: '巴山叙语', designer: '王露瑶' },
+    { file: '思路小使者.png', title: '思路小使者', designer: '杨岚、张怡鑫、曾玉佳' },
+    { file: '楚纹云悬.png', title: '楚纹云悬', designer: '邓聪' },
+    { file: '楚韵魔方1.png', title: '楚韵魔方1', designer: '严彩彩' },
+    { file: '楚韵魔方2.png', title: '楚韵魔方2', designer: '阿尔米' },
+    { file: '楚韵魔方3.png', title: '楚韵魔方3', designer: '陈沁雪' },
+    { file: '竹趣新生.png', title: '竹趣新生', designer: '张雯琦' },
+    { file: '钟点放松局.png', title: '钟点放松局', designer: '舒佳宁、鞠万欣、刘怡萱' }
+];
+var currentIndex = -1;
+
+(function init() {
+    try {
+        var user = API.getUserInfo();
+        user.then(function(u) {
+            document.getElementById('sidebarName').textContent = u.displayName || u.username;
+            var avatar = document.getElementById('sidebarAvatar');
+            avatar.style.background = u.avatarColor || '#C53D43';
+            avatar.textContent = (u.displayName || u.username).charAt(0).toUpperCase();
+        }).catch(function() {});
+    } catch (e) {}
+    renderShowcase();
+})();
+
+function renderShowcase() {
+    var grid = document.getElementById('showcaseGrid');
+    grid.innerHTML = showcaseWorks.map(function(w, i) {
+        return '<div class="showcase-card" onclick="openLightbox(' + i + ')">' +
+            '<div class="showcase-card-img">' +
+            '<img src="images/showcase/' + encodeURIComponent(w.file) + '" alt="' + escapeHtml(w.title) + '" loading="lazy">' +
+            '</div>' +
+            '<div class="showcase-card-body">' +
+            '<div class="showcase-card-title">' + escapeHtml(w.title) + '</div>' +
+            '<div class="showcase-card-designer">设计者：' + escapeHtml(w.designer) + '</div>' +
+            '</div>' +
+        '</div>';
+    }).join('');
+}
+
+function openLightbox(index) {
+    currentIndex = index;
+    var w = showcaseWorks[index];
+    document.getElementById('lightboxImage').src = 'images/showcase/' + encodeURIComponent(w.file);
+    document.getElementById('lightboxTitle').textContent = w.title;
+    document.getElementById('lightboxDesigner').textContent = '设计者：' + w.designer;
+    document.getElementById('lightboxOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox(e) {
+    if (e && e.target !== document.getElementById('lightboxOverlay') && e.target !== document.querySelector('.lightbox-close')) return;
+    document.getElementById('lightboxOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+    currentIndex = -1;
+}
+
+function navigateLightbox(dir) {
+    var newIndex = currentIndex + dir;
+    if (newIndex < 0) newIndex = showcaseWorks.length - 1;
+    if (newIndex >= showcaseWorks.length) newIndex = 0;
+    openLightbox(newIndex);
+}
+
+document.addEventListener('keydown', function(e) {
+    if (currentIndex < 0) return;
+    if (e.key === 'Escape') { closeLightbox(); }
+    if (e.key === 'ArrowLeft') { navigateLightbox(-1); }
+    if (e.key === 'ArrowRight') { navigateLightbox(1); }
+});
+
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+
+async function handleLogout() {
+    try { await API.logout(); } catch (e) {}
+    window.location.href = 'index.html';
+}
+
+function escapeHtml(str) {
+    var d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+}
+</script>
+</body>
+</html>

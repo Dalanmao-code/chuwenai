@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>楚镜AI — AI视频</title>
+    <link rel="stylesheet" href="css/style.css?v=4">
+    <style>
+        .video-studio {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            overflow-y: auto;
+            padding: 16px 24px;
+        }
+
+        /* ---- 顶部纹样选择条 ---- */
+        .video-strip {
+            flex-shrink: 0;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            scroll-behavior: smooth;
+            align-items: center;
+        }
+        .video-strip::-webkit-scrollbar { height: 3px; }
+        .video-strip::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+        .video-strip .strip-label {
+            flex-shrink: 0;
+            font-family: var(--font-heading);
+            font-size: 13px;
+            color: var(--text-primary);
+            letter-spacing: 1px;
+            margin-right: 4px;
+        }
+        .video-strip .strip-cat {
+            flex-shrink: 0;
+        }
+        .video-strip .strip-cat select {
+            font-size: 12px;
+            padding: 4px 8px;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            color: var(--text-primary);
+            background: #fff;
+            outline: none;
+            margin-right: 8px;
+        }
+        .strip-thumb {
+            flex: 0 0 72px;
+            height: 72px;
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.15s;
+            position: relative;
+        }
+        .strip-thumb:hover { border-color: var(--accent); }
+        .strip-thumb.selected { border-color: var(--accent); }
+        .strip-thumb.selected::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            box-shadow: inset 0 0 0 2px var(--accent);
+            border-radius: 4px;
+        }
+        .strip-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .strip-empty {
+            color: var(--text-light);
+            font-size: 13px;
+            padding: 20px;
+        }
+
+        /* ---- 主工作区：预览 + 参数 ---- */
+        .video-workspace {
+            flex-shrink: 0;
+            display: flex;
+            gap: 24px;
+        }
+        .video-preview-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        .video-frame {
+            background: #faf9f6;
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            transition: all 0.3s;
+            width: 100%;
+        }
+        .video-frame.ratio-16-9 { aspect-ratio: 16/9; }
+        .video-frame.ratio-9-16 { aspect-ratio: 9/16; max-width: 300px; }
+        .video-frame.ratio-1-1  { aspect-ratio: 1/1;  max-width: 400px; }
+        .video-frame .no-selection {
+            color: var(--text-light);
+            font-family: var(--font-heading);
+            font-size: 13px;
+            letter-spacing: 1px;
+            text-align: center;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+        .video-frame img { width: 100%; height: 100%; object-fit: contain; }
+        .frame-ratio-tag {
+            margin-top: 8px;
+            font-size: 11px;
+            color: var(--text-light);
+            letter-spacing: 1px;
+        }
+
+        .video-params-col {
+            width: 300px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .param-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            padding: 16px;
+        }
+        .param-section .param-heading {
+            font-family: var(--font-heading);
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+        .param-group {
+            margin-bottom: 10px;
+        }
+        .param-group:last-child { margin-bottom: 0; }
+        .param-group .param-key {
+            display: block;
+            font-size: 11px;
+            color: var(--text-light);
+            margin-bottom: 4px;
+            letter-spacing: 1px;
+        }
+        .param-group .choice-btn {
+            font-size: 11px;
+            padding: 4px 9px;
+            border-radius: 5px;
+        }
+
+        /* ---- 描述 ---- */
+        .video-prompt-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            padding: 16px;
+        }
+        .video-prompt-section .param-heading {
+            font-family: var(--font-heading);
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+        .video-prompt-section textarea {
+            width: 100%;
+            height: 72px;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 13px;
+            font-family: var(--font-body);
+            color: var(--text-primary);
+            background: #faf9f6;
+            resize: vertical;
+            outline: none;
+            box-sizing: border-box;
+        }
+        .video-prompt-section textarea:focus { border-color: var(--accent); }
+
+        /* ---- 生成按钮 ---- */
+        .btn-generate-video {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 300px;
+            align-self: flex-end;
+            padding: 12px;
+            font-size: 15px;
+            font-family: var(--font-heading);
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #C53D43, #a83238);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-generate-video:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(197, 61, 67, 0.3);
+        }
+        .btn-generate-video:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        /* ---- 样品选择 ---- */
+        .video-sample-section {
+            flex-shrink: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            padding: 16px;
+        }
+        .video-sample-section .param-heading {
+            font-family: var(--font-heading);
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+        .sample-grid {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .sample-thumb {
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid var(--border-light);
+            transition: all 0.15s;
+            position: relative;
+        }
+        .sample-thumb:hover { border-color: var(--accent); transform: translateY(-1px); }
+        .sample-thumb.selected { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(197,61,67,0.2); }
+        .sample-thumb.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 18px;
+            height: 18px;
+            background: var(--accent);
+            color: #fff;
+            font-size: 10px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .sample-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+        /* ---- 结果 ---- */
+        .video-result-section {
+            flex-shrink: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            padding: 16px;
+        }
+        .video-result-section .param-heading {
+            font-family: var(--font-heading);
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+        .video-result-section .result-box {
+            background: #faf9f6;
+            border-radius: 8px;
+            min-height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .video-result-section .no-result {
+            color: var(--text-light);
+            font-size: 13px;
+            text-align: center;
+            padding: 30px;
+        }
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .result-card {
+            background: #faf9f6;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+        }
+        .result-card-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            font-family: var(--font-heading);
+            letter-spacing: 1px;
+        }
+        .result-card img, .result-card video {
+            width: 100%;
+            border-radius: 6px;
+            display: block;
+            flex: 1;
+            object-fit: cover;
+        }
+        .result-card .btn-download {
+            margin-top: 8px;
+            align-self: flex-end;
+            font-size: 11px;
+        }
+        .video-placeholder {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 180px;
+            background: #f0ede6;
+            border-radius: 6px;
+            color: var(--text-light);
+            font-size: 12px;
+            gap: 8px;
+        }
+        .video-placeholder-spinner {
+            width: 28px;
+            height: 28px;
+            border: 3px solid #e0dcd0;
+            border-top-color: #C53D43;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .generating-indicator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .generating-indicator span {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+    </style>
+</head>
+<body>
+<div class="patterns-layout">
+    <!-- 左侧边栏 -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-brand"><img src="images/logo.png" alt="" class="sidebar-logo-inline" width="30" height="30">楚镜 AI</div>
+            <small>非遗纹样 · 传承创新</small>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="user-avatar" id="sidebarAvatar"></div>
+            <div class="user-info">
+                <div class="name" id="sidebarName"></div>
+                <span class="role-tag">用户</span>
+            </div>
+        </div>
+
+        <div class="sidebar-nav">
+            <a class="nav-item" href="home.html">
+                <span class="nav-icon">&#127968;</span> 主页
+            </a>
+            <a class="nav-item" href="patterns-library.html">
+                <span class="nav-icon">&#128218;</span> 纹样库
+            </a>
+            <a class="nav-item" href="chat.html">
+                <span class="nav-icon">&#128172;</span> 灵感顾问
+            </a>
+            <a class="nav-item" href="patterns.html">
+                <span class="nav-icon">&#127912;</span> AI设计师
+            </a>
+            <div class="nav-item active">
+                <span class="nav-icon">&#127916;</span> AI视频
+            </div>
+            <a class="nav-item" href="free-create.html">
+                <span class="nav-icon">&#127917;</span> 自由创作
+            </a>
+            <a class="nav-item" href="product-showcase.html">
+                <span class="nav-icon">&#128230;</span> 产品展示
+            </a>
+            <a class="nav-item" href="member-center.html">
+                <span class="nav-icon">&#128100;</span> 会员中心
+            </a>
+        </div>
+
+        <div class="sidebar-footer" style="margin-top:auto;">
+            <button onclick="handleLogout()">&#10149; 退出</button>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="patterns-main">
+        <div class="patterns-header">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+                <span class="brand">楚镜AI · AI视频</span>
+            </div>
+        </div>
+
+        <div class="video-studio">
+            <!-- 一、纹样选择条 -->
+            <div class="video-strip">
+                <span class="strip-label">选择纹样</span>
+                <span class="strip-cat">
+                    <select id="galleryCategorySelect" onchange="onCategoryChange()">
+                        <option value="">全部类别</option>
+                    </select>
+                </span>
+                <div class="strip-scroll-inner" id="patternStrip" style="display:flex;gap:8px;align-items:center;">
+                    <span class="strip-empty">加载中...</span>
+                </div>
+            </div>
+
+            <!-- 二、预览 + 参数面板 -->
+            <div class="video-workspace">
+                <div class="video-preview-col">
+                    <div class="video-frame ratio-9-16" id="previewFrame">
+                        <div class="no-selection" id="noSelection">
+                            在上方选择一张纹样<br>将在此生成视频预览
+                        </div>
+                        <img id="previewImage" style="display:none;" alt="参考纹样">
+                    </div>
+                    <span class="frame-ratio-tag" id="frameLabel">9 : 16</span>
+                </div>
+
+                <div class="video-params-col">
+                    <!-- 参数 -->
+                    <div class="param-section">
+                        <div class="param-heading">视频参数</div>
+                        <div class="param-group">
+                            <span class="param-key">展示风格</span>
+                            <div class="option-choices" id="styleGroup">
+                                <button class="choice-btn active" data-value="">默认</button>
+                                <button class="choice-btn" data-value="旋转展示，">旋转展示</button>
+                                <button class="choice-btn" data-value="平铺展示，">平铺展示</button>
+                                <button class="choice-btn" data-value="特写放大，">特写放大</button>
+                                <button class="choice-btn" data-value="动态光影，">动态光影</button>
+                            </div>
+                        </div>
+                        <div class="param-group">
+                            <span class="param-key">时长</span>
+                            <div class="option-choices" id="durationGroup">
+                                <button class="choice-btn active" data-value="5">5s</button>
+                                <button class="choice-btn" data-value="10">10s</button>
+                            </div>
+                        </div>
+                        <div class="param-group">
+                            <span class="param-key">画面比例</span>
+                            <div class="option-choices" id="ratioGroup">
+                                <button class="choice-btn" data-value="16:9">16:9</button>
+                                <button class="choice-btn active" data-value="9:16">9:16</button>
+                                <button class="choice-btn" data-value="1:1">1:1</button>
+                            </div>
+                        </div>
+                        <div class="param-group">
+                            <span class="param-key">分辨率</span>
+                            <div class="option-choices" id="resolutionGroup">
+                                <button class="choice-btn" data-value="480p">480p</button>
+                                <button class="choice-btn active" data-value="720p">720p</button>
+                                <button class="choice-btn" data-value="1080p">1080p</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 描述 -->
+                    <div class="video-prompt-section">
+                        <div class="param-heading">描述视频内容 <span style="font-weight:400;font-size:11px;color:var(--text-light);">(选填)</span></div>
+                        <textarea id="promptInput" placeholder="例如：纹样从中心向外旋转展开，金色粒子环绕飞舞..."></textarea>
+                    </div>
+
+                    <!-- 生成按钮 -->
+                    <button class="btn-generate-video" id="generateBtn" onclick="generateVideo()" disabled>
+                        &#127916; 生成视频
+                    </button>
+                </div>
+            </div>
+
+            <!-- 三、样品选择 -->
+            <div class="video-sample-section">
+                <div class="param-heading">选择样品图 <span style="font-weight:400;font-size:11px;color:var(--text-light);">— 纹样赋予目标</span></div>
+                <div class="sample-grid" id="sampleGrid">
+                    <span class="strip-empty">加载中...</span>
+                </div>
+            </div>
+
+            <!-- 四、结果 -->
+            <div class="video-result-section">
+                <div class="param-heading">生成结果</div>
+                <div class="no-result" id="noResult">生成后的效果图和视频将在此展示</div>
+                <div class="result-grid" id="resultGrid" style="display:none;">
+                    <div class="result-card" id="resultComposite">
+                        <div class="result-card-label">纹样赋予效果图</div>
+                        <img id="compositeImage" alt="纹样赋予效果图">
+                        <button class="btn-download" onclick="downloadComposite()">&#128229; 下载效果图</button>
+                    </div>
+                    <div class="result-card" id="resultVideoWrap">
+                        <div class="result-card-label">生成视频</div>
+                        <div class="video-placeholder" id="videoPlaceholder">
+                            <div class="video-placeholder-spinner"></div>
+                            <span>视频生成中，请稍候...</span>
+                        </div>
+                        <video id="resultVideo" style="display:none;" controls></video>
+                        <button class="btn-download" id="btnDownloadVideo" onclick="downloadVideo()" style="display:none;">&#128229; 下载视频</button>
+                    </div>
+                </div>
+                <div class="generating-indicator" id="generatingIndicator" style="display:none;">
+                    <div class="progress-bar-wrap">
+                        <div class="progress-bar-fill" id="progressFill"></div>
+                    </div>
+                    <span>视频生成中，请稍候...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="js/api.js?v=3"></script>
+<script>
+// ---- Global state ----
+var patterns = [];
+var allPatterns = [];
+var selectedPattern = null;
+var selectedSample = null;
+var samples = [];
+var videoProgressTimer = null;
+var generatedVideoUrl = null;
+var lastGeneratedBase64 = null;
+
+// ---- helper: get active choice button value ----
+function getActiveChoice(groupId) {
+    var el = document.getElementById(groupId);
+    if (!el) return '';
+    var active = el.querySelector('.choice-btn.active');
+    return active ? active.getAttribute('data-value') : '';
+}
+
+// ---- pattern strip ----
+function renderPatternGrid() {
+    var strip = document.getElementById('patternStrip');
+    if (!strip) return;
+    // clear all but the empty placeholder (first child)
+    if (patterns.length === 0) {
+        strip.innerHTML = '<span class="strip-empty">暂无纹样图片</span>';
+        return;
+    }
+    strip.innerHTML = patterns.map(function(p) {
+        var sel = selectedPattern && selectedPattern.filename === p.filename ? ' selected' : '';
+        return '<div class="strip-thumb' + sel + '" onclick="selectPattern(\'' + p.filename + '\', \'' + p.path + '\', \'' + escapeHtml(p.name) + '\')" title="' + escapeHtml(p.name) + '">' +
+            '<img src="' + BASE + p.path + '" alt="' + escapeHtml(p.name) + '" loading="lazy">' +
+        '</div>';
+    }).join('');
+}
+
+function selectPattern(filename, path, name) {
+    selectedPattern = { filename: filename, path: path, name: name };
+    renderPatternGrid();
+    document.getElementById('noSelection').style.display = 'none';
+    var img = document.getElementById('previewImage');
+    img.src = BASE + path;
+    img.style.display = 'block';
+    updateGenerateButton();
+}
+
+function updateGenerateButton() {
+    document.getElementById('generateBtn').disabled = !(selectedPattern && selectedSample);
+}
+
+// ---- 选择按钮事件 ----
+function setupChoiceButtons() {
+    var groups = ['durationGroup', 'styleGroup', 'ratioGroup', 'resolutionGroup'];
+    groups.forEach(function(groupId) {
+        var group = document.getElementById(groupId);
+        if (!group) return;
+        group.addEventListener('click', function(e) {
+            var btn = e.target.closest('.choice-btn');
+            if (!btn) return;
+            var buttons = group.querySelectorAll('.choice-btn');
+            buttons.forEach(function(b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            if (groupId === 'ratioGroup') {
+                updateFrameRatio(btn.getAttribute('data-value'));
+            }
+        });
+    });
+}
+
+function updateFrameRatio(ratio) {
+    var frame = document.getElementById('previewFrame');
+    var tag = document.getElementById('frameLabel');
+    frame.classList.remove('ratio-16-9', 'ratio-9-16', 'ratio-1-1');
+    if (ratio === '16:9') { frame.classList.add('ratio-16-9'); tag.textContent = '16 : 9'; }
+    else if (ratio === '9:16') { frame.classList.add('ratio-9-16'); tag.textContent = '9 : 16'; }
+    else { frame.classList.add('ratio-1-1'); tag.textContent = '1 : 1'; }
+}
+
+// ---- 视频生成（两步流水线：效果图 → 视频）----
+async function generateVideo() {
+    if (!selectedPattern) { showToast('请先选择一张纹样', 'error'); return; }
+    if (!selectedSample) { showToast('请先选择一张样品图', 'error'); return; }
+
+    var userPrompt = document.getElementById('promptInput').value.trim();
+    var btn = document.getElementById('generateBtn');
+    var indicator = document.getElementById('generatingIndicator');
+    var fill = document.getElementById('progressFill');
+    var statusText = indicator.querySelector('span');
+
+    var duration = parseInt(getActiveChoice('durationGroup')) || 5;
+    var style = getActiveChoice('styleGroup');
+    var ratio = getActiveChoice('ratioGroup') || '9:16';
+    var resolution = getActiveChoice('resolutionGroup') || '720p';
+
+    var patternName = selectedPattern.name || '纹样';
+    var sampleName = selectedSample.name || '样品';
+
+    // hide previous results, reset video card to placeholder state
+    document.getElementById('resultGrid').style.display = 'none';
+    document.getElementById('noResult').style.display = 'block';
+    document.getElementById('resultVideo').style.display = 'none';
+    document.getElementById('btnDownloadVideo').style.display = 'none';
+    document.getElementById('videoPlaceholder').style.display = 'flex';
+    generatedVideoUrl = null;
+    lastGeneratedBase64 = null;
+
+    btn.disabled = true;
+    indicator.style.display = 'flex';
+
+    try {
+        // ===== Step 1: generate composite image via Seedream =====
+        btn.textContent = '生成效果图...';
+        fill.style.width = '0%';
+        statusText.textContent = '正在生成纹样赋予效果图...';
+
+        var compositePrompt = userPrompt
+            ? '将纹样图案自然覆盖到样品上，保持样品的形状轮廓和光影效果。额外要求：' + userPrompt
+            : '将' + patternName + '纹样图案自然覆盖到' + sampleName + '上，保持' + sampleName + '的形状轮廓和光影效果';
+
+        // load sample image as base64
+        var sampleResp = await fetch(BASE + selectedSample.path);
+        var sampleBlob = await sampleResp.blob();
+        var sampleBase64 = await new Promise(function(resolve) {
+            var reader = new FileReader();
+            reader.onloadend = function() { resolve(reader.result.split(',')[1]); };
+            reader.readAsDataURL(sampleBlob);
+        });
+
+        var imgResult = await API.generateImageAdvanced(compositePrompt, selectedPattern.path, '2K', sampleBase64);
+        lastGeneratedBase64 = imgResult.imageBase64;
+
+        // show composite image
+        fill.style.width = '100%';
+        statusText.textContent = '效果图生成完成！';
+        showToast('纹样赋予效果图已生成', 'success');
+
+        document.getElementById('noResult').style.display = 'none';
+        document.getElementById('compositeImage').src = 'data:image/png;base64,' + imgResult.imageBase64;
+        document.getElementById('resultComposite').style.display = 'flex';
+        document.getElementById('resultGrid').style.display = 'grid';
+
+        // ===== Step 2: generate video from composite image =====
+        await new Promise(function(r) { setTimeout(r, 600); });
+        fill.style.width = '0%';
+        btn.textContent = '生成视频中...';
+        statusText.textContent = '正在提交视频生成任务...';
+
+        var videoPrompt = (style ? style : '')
+            + '产品展示视频，镜头缓慢推进展示' + patternName + '纹样在' + sampleName + '上的精美细节与质感，纹样图案保持静态不变化，光影柔和自然，画面稳定平滑';
+
+        var submitRes = await API.generateVideo({
+            prompt: videoPrompt,
+            referenceImageBase64: imgResult.imageBase64,
+            duration: duration,
+            ratio: ratio,
+            resolution: resolution,
+            generateAudio: false
+        });
+
+        if (!submitRes.success) throw new Error('提交失败');
+
+        var taskId = submitRes.taskId;
+        statusText.textContent = '视频生成中，请稍候...';
+
+        // poll until complete
+        var pollCount = 0;
+        clearInterval(videoProgressTimer);
+        videoProgressTimer = setInterval(async function() {
+            pollCount++;
+            try {
+                var pollRes = await API.getVideoTaskStatus(taskId);
+
+                if (pollRes.isSuccess) {
+                    clearInterval(videoProgressTimer);
+                    fill.style.width = '100%';
+                    statusText.textContent = '生成完成！';
+                    generatedVideoUrl = pollRes.videoUrl;
+
+                    setTimeout(function() {
+                        indicator.style.display = 'none';
+                        fill.style.width = '0%';
+                        btn.disabled = false;
+                        btn.textContent = '\u{1F3AC} 生成视频';
+
+                        if (generatedVideoUrl) {
+                            document.getElementById('resultVideo').src = generatedVideoUrl;
+                            document.getElementById('resultVideo').style.display = 'block';
+                            document.getElementById('btnDownloadVideo').style.display = 'inline-flex';
+                            document.getElementById('videoPlaceholder').style.display = 'none';
+                            document.getElementById('resultGrid').style.display = 'grid';
+                        }
+                    }, 800);
+
+                } else if (pollRes.isFailed) {
+                    clearInterval(videoProgressTimer);
+                    indicator.style.display = 'none';
+                    fill.style.width = '0%';
+                    btn.disabled = false;
+                    btn.textContent = '\u{1F3AC} 生成视频';
+                    showToast('视频生成失败，请重试', 'error');
+
+                } else {
+                    var pct = Math.min(90, 5 + pollCount * 2);
+                    fill.style.width = pct + '%';
+                    statusText.textContent = '视频生成中，请稍候... (' + pollRes.status + ')';
+                }
+            } catch (e) {
+                clearInterval(videoProgressTimer);
+                indicator.style.display = 'none';
+                fill.style.width = '0%';
+                btn.disabled = false;
+                btn.textContent = '\u{1F3AC} 生成视频';
+                showToast('轮询失败: ' + e.message, 'error');
+            }
+        }, 3000);
+
+    } catch (e) {
+        indicator.style.display = 'none';
+        fill.style.width = '0%';
+        btn.disabled = false;
+        btn.textContent = '\u{1F3AC} 生成视频';
+        showToast('生成失败: ' + e.message, 'error');
+    }
+}
+
+function downloadComposite() {
+    if (!lastGeneratedBase64) { showToast('没有可下载的效果图', 'error'); return; }
+    var a = document.createElement('a');
+    a.download = '纹样赋予效果图_' + Date.now() + '.png';
+    a.href = 'data:image/png;base64,' + lastGeneratedBase64;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast('效果图下载成功', 'success');
+}
+
+function downloadVideo() {
+    if (!generatedVideoUrl) { showToast('没有可下载的视频', 'error'); return; }
+    var a = document.createElement('a');
+    a.href = generatedVideoUrl;
+    a.download = '楚镜AI视频_' + Date.now() + '.mp4';
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+// ---- sample grid ----
+function renderSampleGrid() {
+    var grid = document.getElementById('sampleGrid');
+    if (!grid) return;
+    if (samples.length === 0) {
+        grid.innerHTML = '<span class="strip-empty">暂无样品图片</span>';
+        return;
+    }
+    grid.innerHTML = samples.map(function(s) {
+        var sel = selectedSample && selectedSample.filename === s.filename ? ' selected' : '';
+        return '<div class="sample-thumb' + sel + '" onclick="selectSample(\'' + s.filename + '\', \'' + s.path + '\', \'' + escapeHtml(s.name) + '\')" title="' + escapeHtml(s.name) + '">' +
+            '<img src="' + BASE + s.path + '" alt="' + escapeHtml(s.name) + '" loading="lazy">' +
+        '</div>';
+    }).join('');
+}
+
+function selectSample(filename, path, name) {
+    selectedSample = { filename: filename, path: path, name: name };
+    renderSampleGrid();
+    updateGenerateButton();
+}
+
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+function escapeHtml(str) { var d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+
+function showToast(msg, type) {
+    var c = document.getElementById('toastContainer');
+    var t = document.createElement('div');
+    t.className = 'toast ' + (type || 'info');
+    t.textContent = msg;
+    c.appendChild(t);
+    setTimeout(function() { t.remove(); }, 3000);
+}
+
+// ---- Init (self-contained, parallel loading like patterns-library) ----
+(async function init() {
+    try {
+        var user = await API.getUserInfo();
+        document.getElementById('sidebarName').textContent = user.username;
+        var avatar = document.getElementById('sidebarAvatar');
+        avatar.style.background = user.avatarColor || '#C53D43';
+        avatar.textContent = user.username.charAt(0).toUpperCase();
+        await loadData();
+        setupChoiceButtons();
+    } catch (e) {
+        console.error('AI视频初始化失败:', e);
+    }
+})();
+
+async function loadData() {
+    try {
+        var results = await Promise.all([
+            API.getPatternCategories(),
+            API.getPatterns(),
+            API.getSamples()
+        ]);
+        // populate category select
+        var categories = results[0];
+        var select = document.getElementById('galleryCategorySelect');
+        categories.forEach(function(cat) {
+            var opt = document.createElement('option');
+            opt.value = cat.name;
+            opt.textContent = cat.name + ' (' + cat.count + ')';
+            select.appendChild(opt);
+        });
+        // patterns
+        allPatterns = results[1];
+        patterns = allPatterns;
+        renderPatternGrid();
+        // samples
+        samples = results[2];
+        renderSampleGrid();
+    } catch (e) {
+        showToast('加载数据失败: ' + e.message, 'error');
+    }
+}
+
+// client-side category filter (no extra API call)
+function onCategoryChange() {
+    var cat = document.getElementById('galleryCategorySelect').value;
+    patterns = cat ? allPatterns.filter(function(p) { return p.category === cat; }) : allPatterns;
+    renderPatternGrid();
+}
+</script>
+</body>
+</html>

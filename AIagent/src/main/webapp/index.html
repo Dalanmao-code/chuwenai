@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>楚镜AI — 非遗纹样智能平台</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="login-page">
+    <canvas id="particles-canvas"></canvas>
+
+    <div class="login-container">
+        <div class="login-card" id="loginCard">
+            <div class="login-logo">
+                <div class="icon">楚</div>
+                <h1>楚镜 AI</h1>
+                <p>非遗纹样 · 传承创新</p>
+            </div>
+
+            <div class="tab-switch">
+                <button class="active" onclick="switchTab('login')">登 录</button>
+                <button onclick="switchTab('register')">注 册</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>用户名</label>
+                    <div class="input-wrap">
+                        <span class="input-icon">&#128100;</span>
+                        <input type="text" id="loginUser" placeholder="请输入用户名" required autocomplete="username">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <div class="input-wrap">
+                        <span class="input-icon">&#128274;</span>
+                        <input type="password" id="loginPass" placeholder="请输入密码" required autocomplete="current-password">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">登 录</button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="registerForm" style="display:none;" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label>用户名</label>
+                    <div class="input-wrap">
+                        <span class="input-icon">&#128100;</span>
+                        <input type="text" id="regUser" placeholder="请输入用户名" required autocomplete="username">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <div class="input-wrap">
+                        <span class="input-icon">&#128274;</span>
+                        <input type="password" id="regPass" placeholder="请输入密码" required autocomplete="new-password">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>确认密码</label>
+                    <div class="input-wrap">
+                        <span class="input-icon">&#128274;</span>
+                        <input type="password" id="regPass2" placeholder="请再次输入密码" required autocomplete="new-password">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">注 册</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        // 水墨粒子动画
+        const canvas = document.getElementById('particles-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        class InkParticle {
+            constructor() {
+                this.reset();
+                this.y = Math.random() * canvas.height;
+            }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = -10;
+                this.size = Math.random() * 2 + 0.5;
+                this.speed = Math.random() * 0.6 + 0.15;
+                this.opacity = Math.random() * 0.3 + 0.05;
+                this.wobble = Math.random() * Math.PI * 2;
+                this.wobbleSpeed = (Math.random() - 0.5) * 0.02;
+                this.hue = Math.random() < 0.3 ? 40 : 0; // gold or dark
+            }
+            update() {
+                this.y += this.speed;
+                this.wobble += this.wobbleSpeed;
+                this.x += Math.sin(this.wobble) * 0.3;
+                if (this.y > canvas.height + 10) this.reset();
+            }
+            draw() {
+                if (this.hue === 40) {
+                    ctx.fillStyle = `rgba(201, 168, 76, ${this.opacity})`;
+                } else {
+                    ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                }
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 60; i++) particles.push(new InkParticle());
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        function switchTab(tab) {
+            const btns = document.querySelectorAll('.tab-switch button');
+            btns[0].classList.toggle('active', tab === 'login');
+            btns[1].classList.toggle('active', tab === 'register');
+            document.getElementById('loginForm').style.display = tab === 'login' ? '' : 'none';
+            document.getElementById('registerForm').style.display = tab === 'register' ? '' : 'none';
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUser').value.trim();
+            const password = document.getElementById('loginPass').value;
+            try {
+                const data = await API.login(username, password);
+                if (data.user.role === 'admin') {
+                    window.location.href = 'admin.html';
+                } else {
+                    window.location.href = 'home.html';
+                }
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const username = document.getElementById('regUser').value.trim();
+            const password = document.getElementById('regPass').value;
+            const password2 = document.getElementById('regPass2').value;
+            if (password !== password2) {
+                showToast('两次密码不一致', 'error');
+                return;
+            }
+            if (password.length < 6) {
+                showToast('密码至少6位', 'error');
+                return;
+            }
+            try {
+                await API.register(username, password);
+                window.location.href = 'home.html';
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        function showToast(msg, type) {
+            let container = document.querySelector('.toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'toast-container';
+                document.body.appendChild(container);
+            }
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.textContent = msg;
+            container.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 3000);
+        }
+    </script>
+</body>
+</html>

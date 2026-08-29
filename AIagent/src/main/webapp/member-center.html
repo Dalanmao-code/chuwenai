@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>楚镜AI — 会员中心</title>
+    <link rel="stylesheet" href="css/style.css?v=3">
+    <style>
+        .member-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 32px;
+        }
+
+        /* ---- Header ---- */
+        .member-hero {
+            text-align: center;
+            padding: 32px 20px 24px;
+            background: linear-gradient(135deg, #ffd498 0%, #faf5ea 40%, #ffb562 100%);
+            border-radius: 12px;
+            margin-bottom: 28px;
+            position: relative;
+            overflow: hidden;
+        }
+        .member-hero::before {
+            content: '';
+            position: absolute;
+            top: -40px; right: -40px;
+            width: 140px; height: 140px;
+            background: radial-gradient(circle, rgba(197,61,67,0.06) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .member-hero-title {
+            font-family: var(--font-heading);
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+        .member-hero-sub {
+            font-size: 14px;
+            color: var(--text-light);
+            letter-spacing: 1px;
+            margin-bottom: 14px;
+        }
+        .member-hero-hints {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .member-hero-hint {
+            background: #fff;
+            border: 1px solid #e8e0d0;
+            border-radius: 20px;
+            padding: 4px 14px;
+            font-size: 11px;
+            color: #8b7355;
+            letter-spacing: 0.5px;
+        }
+
+        /* ---- Tier Cards ---- */
+        .member-tiers {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .tier-card {
+            display: flex;
+            background: #fff;
+            border: 1px solid #e8e0d0;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .tier-card:hover {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            transform: translateY(-1px);
+        }
+        .tier-card.featured {
+            border-color: #d4a853;
+            box-shadow: 0 2px 16px rgba(212,168,83,0.15);
+        }
+        .tier-card.featured .tier-side {
+            background: linear-gradient(180deg, #c9983a 0%, #b8862d 100%);
+            color: #fff;
+        }
+
+        .tier-side {
+            width: 140px;
+            min-width: 140px;
+            background: #faf8f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 12px;
+            text-align: center;
+            position: relative;
+        }
+        .tier-side .tier-name {
+            font-family: var(--font-heading);
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 4px;
+        }
+        .tier-card.featured .tier-side .tier-name { color: #fff; }
+        .tier-side .tier-badge {
+            font-size: 11px;
+            letter-spacing: 1px;
+            margin-top: 6px;
+            background: rgba(0,0,0,0.06);
+            padding: 2px 10px;
+            border-radius: 10px;
+        }
+        .tier-card.featured .tier-side .tier-badge {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .tier-body {
+            flex: 1;
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .tier-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .tier-tag {
+            font-size: 10px;
+            padding: 2px 10px;
+            border-radius: 10px;
+            letter-spacing: 0.5px;
+        }
+        .tier-tag.tag-green { background: #e8f5e9; color: #388e3c; }
+        .tier-tag.tag-blue { background: #e3f2fd; color: #1565c0; }
+        .tier-tag.tag-gold { background: #fff8e1; color: #b8862d; }
+        .tier-tag.tag-dark { background: #eceff1; color: #37474f; }
+
+        .tier-features {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px 16px;
+        }
+        .tier-features li {
+            font-size: 12px;
+            color: #555;
+            padding: 2px 0;
+        }
+        .tier-features li::before { content: '✓ '; color: #4caf50; font-weight: 700; }
+
+        .tier-points {
+            font-size: 11px;
+            color: #8b7355;
+            background: #fdf8f0;
+            border-radius: 6px;
+            padding: 8px 12px;
+            line-height: 1.6;
+        }
+        .tier-points strong { color: #c9983a; }
+
+        .tier-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .tier-pricing {
+            display: flex;
+            gap: 16px;
+        }
+        .tier-price-item {
+            text-align: center;
+        }
+        .tier-price-item .price-num {
+            font-size: 22px;
+            font-weight: 700;
+            color: #c53d43;
+            font-family: var(--font-heading);
+        }
+        .tier-price-item .price-num small {
+            font-size: 12px;
+            font-weight: 400;
+            color: var(--text-light);
+        }
+        .tier-price-item .price-label {
+            font-size: 10px;
+            color: var(--text-light);
+        }
+        .tier-price-item .price-save {
+            font-size: 10px;
+            color: #4caf50;
+        }
+
+        .btn-upgrade {
+            padding: 10px 28px;
+            border: none;
+            border-radius: 8px;
+            font-family: var(--font-heading);
+            font-size: 13px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+        }
+        .btn-upgrade:hover { opacity: 0.85; }
+        .btn-upgrade.btn-current {
+            background: #e0dcd0;
+            color: #999;
+            cursor: default;
+        }
+        .btn-upgrade.btn-primary { background: #c53d43; color: #fff; }
+        .btn-upgrade.btn-gold { background: linear-gradient(135deg, #d4a853, #c9983a); color: #fff; }
+        .btn-upgrade.btn-dark { background: #37474f; color: #fff; }
+
+        /* ---- Points Center ---- */
+        .points-section {
+            background: #fff;
+            border: 1px solid #e8e0d0;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .points-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .points-header-title {
+            font-family: var(--font-heading);
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+        .points-balance {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+        .points-balance-num {
+            font-size: 36px;
+            font-weight: 700;
+            color: #c9983a;
+            font-family: var(--font-heading);
+        }
+        .points-balance-label {
+            font-size: 13px;
+            color: var(--text-light);
+        }
+        .points-info {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            font-size: 12px;
+            color: var(--text-light);
+            margin-bottom: 16px;
+        }
+        .points-info span { white-space: nowrap; }
+
+        .points-collapse {
+            border-top: 1px solid #eee;
+            padding-top: 12px;
+        }
+        .points-collapse-btn {
+            font-size: 12px;
+            color: #c53d43;
+            cursor: pointer;
+            letter-spacing: 1px;
+            background: none;
+            border: none;
+            font-family: var(--font-heading);
+        }
+        .points-collapse-btn:hover { text-decoration: underline; }
+        .points-detail {
+            display: none;
+            margin-top: 12px;
+            padding: 16px;
+            background: #faf8f4;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #555;
+            line-height: 1.8;
+        }
+        .points-detail.open { display: block; }
+        .points-detail h4 {
+            font-size: 13px;
+            font-weight: 600;
+            margin: 12px 0 6px;
+            letter-spacing: 1px;
+            color: var(--text-primary);
+        }
+        .points-detail h4:first-child { margin-top: 0; }
+        .points-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+        .points-action-btn {
+            padding: 8px 16px;
+            border: 1px solid #d4a853;
+            background: #fff;
+            color: #b8862d;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            font-family: var(--font-heading);
+            letter-spacing: 1px;
+            transition: all 0.2s;
+        }
+        .points-action-btn:hover {
+            background: #d4a853;
+            color: #fff;
+        }
+
+        /* ---- Rules Accordion ---- */
+        .rules-section {
+            margin-bottom: 32px;
+        }
+        .rules-toggle {
+            font-size: 12px;
+            color: var(--text-light);
+            cursor: pointer;
+            letter-spacing: 1px;
+            background: none;
+            border: none;
+            font-family: var(--font-heading);
+            text-align: left;
+            width: 100%;
+            padding: 10px 0;
+            border-bottom: 1px solid #e8e0d0;
+        }
+        .rules-toggle:hover { color: #c53d43; }
+        .rules-content {
+            display: none;
+            padding: 16px 0;
+            font-size: 12px;
+            color: #555;
+            line-height: 1.8;
+        }
+        .rules-content.open { display: block; }
+        .rules-content h4 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+            color: var(--text-primary);
+        }
+
+        @media (max-width: 768px) {
+            .member-body { padding: 16px; }
+            .tier-card { flex-direction: column; }
+            .tier-side { width: 100%; min-width: auto; flex-direction: row; gap: 12px; padding: 14px 16px; }
+            .tier-features { grid-template-columns: 1fr; }
+            .tier-footer { flex-direction: column; align-items: stretch; }
+            .btn-upgrade { width: 100%; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+<div class="patterns-layout">
+    <!-- 左侧边栏 -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-brand"><img src="images/logo.png" alt="" class="sidebar-logo-inline" width="30" height="30">楚镜 AI</div>
+            <small>非遗纹样 · 传承创新</small>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="user-avatar" id="sidebarAvatar"></div>
+            <div class="user-info">
+                <div class="name" id="sidebarName"></div>
+                <span class="role-tag" id="memberBadge">免费用户</span>
+            </div>
+        </div>
+
+        <div class="sidebar-nav">
+            <a class="nav-item" href="home.html">
+                <span class="nav-icon">&#127968;</span> 主页
+            </a>
+            <a class="nav-item" href="patterns-library.html">
+                <span class="nav-icon">&#128218;</span> 纹样库
+            </a>
+            <a class="nav-item" href="chat.html">
+                <span class="nav-icon">&#128172;</span> 灵感顾问
+            </a>
+            <a class="nav-item" href="patterns.html">
+                <span class="nav-icon">&#127912;</span> AI设计师
+            </a>
+            <a class="nav-item" href="ai-video.html">
+                <span class="nav-icon">&#127916;</span> AI视频
+            </a>
+            <a class="nav-item" href="free-create.html">
+                <span class="nav-icon">&#127917;</span> 自由创作
+            </a>
+            <a class="nav-item" href="product-showcase.html">
+                <span class="nav-icon">&#128230;</span> 产品展示
+            </a>
+            <div class="nav-item active">
+                <span class="nav-icon">&#128100;</span> 会员中心
+            </div>
+        </div>
+
+        <div class="sidebar-footer" style="margin-top:auto;">
+            <button onclick="handleLogout()">&#10149; 退出</button>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="patterns-main">
+        <div class="patterns-header">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+                <span class="brand">会员中心</span>
+            </div>
+        </div>
+
+        <div class="member-body">
+            <!-- Hero -->
+            <div class="member-hero">
+                <div class="member-hero-title">会员中心</div>
+                <div class="member-hero-sub">解锁楚镜 AI 全部创作能力 · 越创作越超值</div>
+                <div class="member-hero-hints">
+                    <span class="member-hero-hint">所有会员永久去水印</span>
+                    <span class="member-hero-hint">积分可抵扣续费</span>
+                    <span class="member-hero-hint">积分可抵扣算力</span>
+                    <span class="member-hero-hint">积分可兑文创周边</span>
+                </div>
+            </div>
+
+            <!-- 四档会员卡片 -->
+            <div class="member-tiers">
+                <!-- 青楚会员 -->
+                <div class="tier-card">
+                    <div class="tier-side">
+                        <div class="tier-name">青楚会员</div>
+                        <div style="font-size:12px;color:var(--text-light);">入门轻享</div>
+                        <div class="tier-badge">新手首选</div>
+                    </div>
+                    <div class="tier-body">
+                        <div class="tier-tags">
+                            <span class="tier-tag tag-green">日常作业</span>
+                            <span class="tier-tag tag-green">轻度创作</span>
+                        </div>
+                        <ul class="tier-features">
+                            <li>每月 800 创作算力点数</li>
+                            <li>基础纹样识别·常规 AI 图文生成</li>
+                            <li>标准高清导出·全部基础模板库</li>
+                            <li>基础社群答疑服务</li>
+                        </ul>
+                        <div class="tier-points">
+                            <strong>积分特权：</strong>日常积分 1.2 倍加成 · 每月固定领取 100 楚纹积分 · 续费最高积分抵扣 30%
+                        </div>
+                        <div class="tier-footer">
+                            <div class="tier-pricing">
+                                <div class="tier-price-item">
+                                    <div class="price-label">月卡</div>
+                                    <div class="price-num">&yen;9.9<small>/月</small></div>
+                                </div>
+                                <div class="tier-price-item">
+                                    <div class="price-label">年卡</div>
+                                    <div class="price-num">&yen;99<small>/年</small></div>
+                                    <div class="price-save">8折立省 &yen;19.8</div>
+                                </div>
+                            </div>
+                            <button class="btn-upgrade btn-primary" onclick="handleUpgrade('青楚')">立即开通</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 灵镜会员 -->
+                <div class="tier-card featured">
+                    <div class="tier-side">
+                        <div class="tier-name">灵镜会员</div>
+                        <div style="font-size:12px;opacity:0.85;">高频创作</div>
+                        <div class="tier-badge">&#9733; 热门推荐</div>
+                    </div>
+                    <div class="tier-body">
+                        <div class="tier-tags">
+                            <span class="tier-tag tag-blue">学生主力</span>
+                            <span class="tier-tag tag-blue">赛事创作</span>
+                            <span class="tier-tag tag-blue">高频出图</span>
+                        </div>
+                        <ul class="tier-features">
+                            <li>每月 2000 创作算力点数</li>
+                            <li>解锁【荆楚专属纹样模型】</li>
+                            <li>纹样修复、风格迁移、纹样重构</li>
+                            <li>超高清无损导出、批量下载</li>
+                            <li>优先服务器加速响应</li>
+                            <li>每周更新专属楚纹素材包</li>
+                        </ul>
+                        <div class="tier-points">
+                            <strong>积分特权：</strong>日常积分 1.5 倍加成 · 每月固定领取 300 楚纹积分 · 续费最高积分抵扣 40%
+                        </div>
+                        <div class="tier-footer">
+                            <div class="tier-pricing">
+                                <div class="tier-price-item">
+                                    <div class="price-label">月卡</div>
+                                    <div class="price-num">&yen;29.9<small>/月</small></div>
+                                </div>
+                                <div class="tier-price-item">
+                                    <div class="price-label">年卡</div>
+                                    <div class="price-num">&yen;269<small>/年</small></div>
+                                    <div class="price-save">7.5折立省 &yen;89.8</div>
+                                </div>
+                            </div>
+                            <button class="btn-upgrade btn-gold" onclick="handleUpgrade('灵镜')">立即开通</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 楚匠会员 -->
+                <div class="tier-card">
+                    <div class="tier-side" style="background:linear-gradient(180deg, #faf3e6 0%, #f5e6cc 100%);">
+                        <div class="tier-name" style="color:#b8862d;">楚匠会员</div>
+                        <div style="font-size:12px;color:#8b7355;">专业全能</div>
+                        <div class="tier-badge" style="background:rgba(184,134,45,0.12);color:#8b6914;">专业之选</div>
+                    </div>
+                    <div class="tier-body">
+                        <div class="tier-tags">
+                            <span class="tier-tag tag-gold">专业设计</span>
+                            <span class="tier-tag tag-gold">毕设参赛</span>
+                            <span class="tier-tag tag-gold">个人商用</span>
+                        </div>
+                        <ul class="tier-features">
+                            <li>月度无限 AI 创作算力</li>
+                            <li>解锁全部高阶纹样模型 & 定制生成</li>
+                            <li>全套文创衍生品模板</li>
+                            <li>源文件导出、全量批量渲染</li>
+                            <li>个人作品商用授权</li>
+                            <li>新功能优先内测体验</li>
+                            <li>1v1 基础设计技术支持</li>
+                        </ul>
+                        <div class="tier-points">
+                            <strong>积分特权：</strong>日常积分 1.8 倍加成 · 每月固定领取 600 楚纹积分 · 全服务最高积分抵扣 50%
+                        </div>
+                        <div class="tier-footer">
+                            <div class="tier-pricing">
+                                <div class="tier-price-item">
+                                    <div class="price-label">月卡</div>
+                                    <div class="price-num">&yen;69<small>/月</small></div>
+                                </div>
+                                <div class="tier-price-item">
+                                    <div class="price-label">年卡</div>
+                                    <div class="price-num">&yen;629<small>/年</small></div>
+                                    <div class="price-save">7.6折立省 &yen;199</div>
+                                </div>
+                            </div>
+                            <button class="btn-upgrade btn-gold" onclick="handleUpgrade('楚匠')">立即开通</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 楚纹积分中心 -->
+            <div class="points-section">
+                <div class="points-header">
+                    <div>
+                        <div class="points-header-title">楚纹积分中心</div>
+                        <div style="font-size:12px;color:var(--text-light);margin-top:4px;">越创作 · 越超值</div>
+                    </div>
+                    <div class="points-balance">
+                        <span class="points-balance-label">我的楚纹积分</span>
+                        <span class="points-balance-num" id="pointsBalance">--</span>
+                    </div>
+                </div>
+                <div class="points-info">
+                    <span>&#128176; 100 积分 = 1 元</span>
+                    <span>&#128337; 积分有效期：12 个月滚动有效</span>
+                    <span>&#127942; 会员奖励积分 18 个月</span>
+                </div>
+                <div class="points-collapse">
+                    <button class="points-collapse-btn" id="pointsToggle" onclick="togglePointsDetail()">&#9660; 积分获取方式</button>
+                    <div class="points-detail" id="pointsDetail">
+                        <h4>可获取积分行为</h4>
+                        <p>每日登录 +5 分 &nbsp;|&nbsp; AI 生成 / 纹样识别（日上限 30 分）&nbsp;|&nbsp; 社区发布作品 +10 分/条（日上限 50 分）&nbsp;|&nbsp; 作品获点赞收藏 &nbsp;|&nbsp; 提交功能反馈 / 问卷 &nbsp;|&nbsp; 邀请新用户注册得大额积分</p>
+                        <h4>会员加成说明</h4>
+                        <p>档位越高，日常积分倍数越高 · 年卡用户额外 +20% 消费积分</p>
+                    </div>
+                </div>
+                <div class="points-actions">
+                    <button class="points-action-btn" onclick="showToast('功能开发中，敬请期待', 'info')">积分抵扣续费</button>
+                    <button class="points-action-btn" onclick="showToast('功能开发中，敬请期待', 'info')">兑换额外算力包</button>
+                    <button class="points-action-btn" onclick="showToast('功能开发中，敬请期待', 'info')">兑换云端扩容</button>
+                    <button class="points-action-btn" onclick="showToast('功能开发中，敬请期待', 'info')">兑换高清导出加速</button>
+                    <button class="points-action-btn" onclick="showToast('功能开发中，敬请期待', 'info')">兑换楚纹文创周边</button>
+                    <button class="points-action-btn" onclick="showToast('功能开发中，敬请期待', 'info')">兑换限定素材包 & 内测资格</button>
+                </div>
+            </div>
+
+            <!-- 会员规则详情 -->
+            <div class="rules-section">
+                <button class="rules-toggle" id="rulesToggle" onclick="toggleRules()">&#9654; 《会员规则详情》</button>
+                <div class="rules-content" id="rulesContent">
+                    <h4>会员通用规则</h4>
+                    <p>所有档位均为付费会员，全部支持永久去水印 · 升级档位只需补差价，权益即时生效 · 月度算力当月清空，不累计次月 · 消费 1 元 = 10 积分，年卡用户额外赠送 20% 积分</p>
+                    <h4>版权区分</h4>
+                    <p>青楚 / 灵镜：仅限个人非商用 · 楚匠：个人商用授权</p>
+                    <h4>积分规则</h4>
+                    <p>积分不可提现、仅可抵扣 / 兑换 · 到期积分系统自动清零，到期前 7 天弹窗提醒 · 越高级会员，创作速度越快、功能越全 · 年卡性价比最高，立省超 30% · 积分叠加会员倍数，创作越多越省钱 · 旗舰档支持多人共用，适合团队项目使用</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="js/api.js"></script>
+<script>
+(async function init() {
+    try {
+        var user = await API.getUserInfo();
+        document.getElementById('sidebarName').textContent = user.displayName || user.username;
+        var avatar = document.getElementById('sidebarAvatar');
+        avatar.style.background = user.avatarColor || '#C53D43';
+        avatar.textContent = (user.displayName || user.username).charAt(0).toUpperCase();
+
+        // mock points (replace with real API later)
+        var mockPoints = 1280;
+        document.getElementById('pointsBalance').textContent = mockPoints;
+    } catch (e) {
+        window.location.href = 'index.html';
+    }
+})();
+
+function handleUpgrade(plan) {
+    showToast('升级至「' + plan + '会员」功能开发中，敬请期待', 'info');
+}
+
+function togglePointsDetail() {
+    var detail = document.getElementById('pointsDetail');
+    var btn = document.getElementById('pointsToggle');
+    var open = detail.classList.toggle('open');
+    btn.innerHTML = open ? '&#9650; 收起积分获取方式' : '&#9660; 积分获取方式';
+}
+
+function toggleRules() {
+    var content = document.getElementById('rulesContent');
+    var btn = document.getElementById('rulesToggle');
+    var open = content.classList.toggle('open');
+    btn.innerHTML = open ? '&#9660; 《会员规则详情》' : '&#9654; 《会员规则详情》';
+}
+
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+}
+
+async function handleLogout() {
+    try { await API.logout(); } catch (e) {}
+    window.location.href = 'index.html';
+}
+
+function showToast(msg, type) {
+    var c = document.getElementById('toastContainer');
+    var t = document.createElement('div');
+    t.className = 'toast ' + (type || 'info');
+    t.textContent = msg;
+    c.appendChild(t);
+    setTimeout(function() { t.remove(); }, 3000);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>楚镜AI — AI设计师</title>
+    <link rel="stylesheet" href="css/style.css?v=6">
+</head>
+<body>
+<div class="patterns-layout">
+    <!-- 左侧边栏 -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-brand"><img src="images/logo.png" alt="" class="sidebar-logo-inline" width="30" height="30">楚镜 AI</div>
+            <small>非遗纹样 · 传承创新</small>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="user-avatar" id="sidebarAvatar"></div>
+            <div class="user-info">
+                <div class="name" id="sidebarName"></div>
+                <span class="role-tag">用户</span>
+            </div>
+        </div>
+
+        <!-- 导航菜单 -->
+        <div class="sidebar-nav">
+            <a class="nav-item" href="home.html">
+                <span class="nav-icon">&#127968;</span> 主页
+            </a>
+            <a class="nav-item" href="patterns-library.html">
+                <span class="nav-icon">&#128218;</span> 纹样库
+            </a>
+            <a class="nav-item" href="chat.html">
+                <span class="nav-icon">&#128172;</span> 灵感顾问
+            </a>
+            <div class="nav-item active">
+                <span class="nav-icon">&#127912;</span> AI设计师
+            </div>
+            <a class="nav-item" href="ai-video.html">
+                <span class="nav-icon">&#127916;</span> AI视频
+            </a>
+            <a class="nav-item" href="free-create.html">
+                <span class="nav-icon">&#127917;</span> 自由创作
+            </a>
+            <a class="nav-item" href="product-showcase.html">
+                <span class="nav-icon">&#128230;</span> 产品展示
+            </a>
+            <a class="nav-item" href="member-center.html">
+                <span class="nav-icon">&#128100;</span> 会员中心
+            </a>
+        </div>
+
+        <div class="sidebar-footer" style="margin-top:auto;">
+            <button onclick="handleLogout()">&#10149; 退出</button>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="patterns-main">
+        <div class="patterns-header">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+                <span class="brand">楚镜AI · AI设计师</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div class="mode-toggle">
+                    <button class="mode-btn active" id="modeDesignBtn" onclick="switchMode('design')">
+                        <span class="mode-icon">&#127912;</span>
+                        <span>AI设计</span>
+                    </button>
+                    <button class="mode-btn" id="modeApplyBtn" onclick="switchMode('apply')">
+                        <span class="mode-icon">&#10022;</span>
+                        <span>应用场景</span>
+                    </button>
+                </div>
+                <button class="icon-btn" title="展开纹样库" onclick="toggleGallery()">&#128444;</button>
+            </div>
+        </div>
+
+        <div class="patterns-body">
+            <!-- 纹样库面板 -->
+            <div class="pattern-gallery-panel" id="galleryPanel">
+                <div class="panel-title">
+                    &#128444; 纹样数据库
+                </div>
+                <div class="gallery-category-bar" id="galleryCategoryBar">
+                    <select id="galleryCategorySelect" onchange="onCategoryChange()">
+                        <option value="">全部类别</option>
+                    </select>
+                </div>
+                <div class="pattern-grid" id="patternGrid">
+                    <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-light);">
+                        加载中...
+                    </div>
+                </div>
+            </div>
+
+            <!-- 创作区 -->
+            <div class="creation-panel" id="creationPanel">
+                <div class="section-title">一、选择参考纹样</div>
+                <div class="preview-area">
+                    <div class="preview-box" id="previewBox">
+                        <div class="no-selection" id="noSelection">
+                            请在左侧纹样库中选择一张参考图片
+                        </div>
+                        <img id="previewImage" style="display:none;" alt="参考纹样">
+                    </div>
+                </div>
+
+                <div class="divider-ornament">◇ 回 ◇ 纹 ◇</div>
+
+                <!-- 生成选项（AI设计模式） -->
+                <div class="generate-options" id="generateOptions">
+                    <div class="section-title">二、生成选项</div>
+                    <div class="options-panel">
+                        <div class="option-row">
+                            <span class="option-label">分辨率</span>
+                            <div class="option-choices" id="resolutionGroup">
+                                <button class="choice-btn" data-value="1K">1K</button>
+                                <button class="choice-btn active" data-value="2K">2K</button>
+                                <button class="choice-btn" data-value="4K">4K</button>
+                            </div>
+                        </div>
+                        <div class="option-row">
+                            <span class="option-label">风格</span>
+                            <div class="option-choices" id="styleGroup">
+                                <button class="choice-btn active" data-value="">默认</button>
+                                <button class="choice-btn" data-value="写实摄影风格，">写实</button>
+                                <button class="choice-btn" data-value="水墨画风格，">水墨</button>
+                                <button class="choice-btn" data-value="工笔画风格，精细线条，">工笔</button>
+                                <button class="choice-btn" data-value="扁平矢量风格，">矢量</button>
+                                <button class="choice-btn" data-value="油画质感，">油画</button>
+                            </div>
+                        </div>
+                        <div class="option-row">
+                            <span class="option-label">配色</span>
+                            <div class="option-choices" id="colorGroup">
+                                <button class="choice-btn active" data-value="">默认</button>
+                                <button class="choice-btn" data-value="使用传统红金配色（朱红、赤金、墨色），">红金</button>
+                                <button class="choice-btn" data-value="使用青花瓷配色（钴蓝、釉白、淡青），">青花</button>
+                                <button class="choice-btn" data-value="使用水墨黑白配色，浓淡相宜，">水墨</button>
+                                <button class="choice-btn" data-value="使用敦煌色系（石青、赭红、松绿、金粉），">敦煌</button>
+                            </div>
+                        </div>
+                        <div class="option-row">
+                            <span class="option-label">密度</span>
+                            <div class="option-choices" id="densityGroup">
+                                <button class="choice-btn active" data-value="">适中</button>
+                                <button class="choice-btn" data-value="纹样稀疏分布，大量留白，">稀疏</button>
+                                <button class="choice-btn" data-value="纹样密集排布，繁复精致，">密集</button>
+                                <button class="choice-btn" data-value="纹样作为边角装饰，中央留白，">边角</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="promptSection">
+                    <div class="divider-ornament" id="dividerBeforePrompt">◇ 回 ◇ 纹 ◇</div>
+
+                    <div class="section-title" id="promptSectionTitle">三、描述修改效果</div>
+                    <div class="prompt-input-area">
+                        <label for="promptInput" id="promptLabel">你想要如何改变这个纹样？</label>
+                        <textarea id="promptInput" placeholder="例如：将纹样改为金色配色，增加云纹元素，背景改为深蓝色..."></textarea>
+                    </div>
+                </div>
+
+                <!-- 应用场景模式：展开描述 -->
+                <button class="btn-toggle-prompt" id="btnTogglePrompt" style="display:none;" onclick="togglePrompt()">
+                    + 展开描述选项
+                </button>
+
+                <!-- 应用场景模式：模板库 -->
+                <div class="template-library" id="templateLibrary" style="display:none;">
+                    <div class="divider-ornament">◇ 回 ◇ 纹 ◇</div>
+                    <div class="section-title">三、选择样品图片</div>
+                    <div class="gallery-category-bar" id="sampleCategoryBar">
+                        <select id="sampleCategorySelect" onchange="onSampleCategoryChange()">
+                            <option value="">全部类别</option>
+                        </select>
+                    </div>
+                    <div class="template-grid collapsed" id="templateGrid">
+                        <div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--text-light);">
+                            加载中...
+                        </div>
+                    </div>
+                    <button class="btn-expand-samples" id="btnExpandSamples" onclick="toggleSampleExpand()" style="display:none;">
+                        <span id="btnExpandSamplesIcon">▼</span> 展开更多
+                    </button>
+                </div>
+
+                <button class="btn-generate" id="generateBtn" onclick="generateImage()" disabled>
+                    生成纹样
+                </button>
+
+                <div class="divider-ornament">◇ 回 ◇ 纹 ◇</div>
+
+                <div class="section-title">四、生成结果</div>
+                <div class="result-area" id="resultArea">
+                    <div class="result-box">
+                        <div class="no-result" id="noResult">
+                            生成后的纹样将在此展示
+                        </div>
+                        <img id="resultImage" style="display:none;" alt="生成纹样">
+                    </div>
+                    <div class="result-actions" id="resultActions" style="display:none;">
+                        <button class="btn-download" onclick="downloadImage()" title="下载图片">
+                            &#128229; 下载纹样
+                        </button>
+                    </div>
+                </div>
+                <div class="generating-indicator" id="generatingIndicator" style="display:none;">
+                    <div class="progress-bar-wrap">
+                        <div class="progress-bar-fill" id="progressFill"></div>
+                    </div>
+                    <span>纹样生成中，请稍候...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="js/api.js?v=5"></script>
+<script src="js/patterns.js?v=5"></script>
+</body>
+</html>

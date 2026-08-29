@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>楚镜AI — 灵感顾问</title>
+    <link rel="stylesheet" href="css/style.css?v=2">
+</head>
+<body>
+<div class="chat-layout">
+    <!-- 左侧边栏 -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-brand"><img src="images/logo.png" alt="" class="sidebar-logo-inline" width="30" height="30">楚镜 AI</div>
+            <small>非遗纹样 · 传承创新</small>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="user-avatar" id="sidebarAvatar"></div>
+            <div class="user-info">
+                <div class="name" id="sidebarName"></div>
+                <span class="role-tag">用户</span>
+            </div>
+        </div>
+
+        <!-- 导航菜单 -->
+        <div class="sidebar-nav">
+            <a class="nav-item" href="home.html">
+                <span class="nav-icon">&#127968;</span> 主页
+            </a>
+            <a class="nav-item" href="patterns-library.html">
+                <span class="nav-icon">&#128218;</span> 纹样库
+            </a>
+            <div class="nav-item active" onclick="switchToChat()">
+                <span class="nav-icon">&#128172;</span> 灵感顾问
+            </div>
+            <a class="nav-item" href="patterns.html">
+                <span class="nav-icon">&#127912;</span> AI设计师
+            </a>
+            <a class="nav-item" href="ai-video.html">
+                <span class="nav-icon">&#127916;</span> AI视频
+            </a>
+            <a class="nav-item" href="free-create.html">
+                <span class="nav-icon">&#127917;</span> 自由创作
+            </a>
+            <a class="nav-item" href="product-showcase.html">
+                <span class="nav-icon">&#128230;</span> 产品展示
+            </a>
+            <a class="nav-item" href="member-center.html">
+                <span class="nav-icon">&#128100;</span> 会员中心
+            </a>
+        </div>
+
+        <button class="btn-new-chat" onclick="createNewChat()">
+            <span>&#10010;</span> 新建对话
+        </button>
+
+        <div class="conversation-list" id="convList">
+            <div style="text-align:center;color:rgba(255,255,255,0.2);padding:40px 0;font-size:13px;">
+                暂无对话<br>点击上方按钮开始
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            <button onclick="openPromptSettings()">&#9881; 提示词</button>
+            <button onclick="handleLogout()">&#10149; 退出</button>
+        </div>
+    </div>
+
+    <!-- 主聊天区 -->
+    <div class="main-chat">
+        <div class="chat-header">
+            <div class="chat-header-left">
+                <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+                <span class="ai-status"></span>
+                <span class="conv-title-header" id="convTitle">灵感顾问</span>
+            </div>
+            <div class="chat-header-right">
+                <button class="icon-btn" title="设置" onclick="openPromptSettings()">&#9881;</button>
+            </div>
+        </div>
+
+        <div class="message-area" id="messageArea">
+            <div class="empty-state">
+                <div class="empty-icon">&#9758;</div>
+                <p>选择或创建一个对话开始与灵感顾问交流</p>
+            </div>
+        </div>
+
+        <div class="chat-input-area">
+            <div class="input-row">
+                <textarea id="userInput" rows="1" placeholder="向灵感顾问提问... (Enter 发送，Shift+Enter 换行)"
+                    onkeydown="handleInputKey(event)" disabled></textarea>
+                <button class="btn-send" id="sendBtn" onclick="sendMessage()" disabled>
+                    &#10148;
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 提示词设置弹窗 -->
+<div class="prompt-modal-overlay" id="promptModal" style="display:none;">
+    <div class="prompt-modal">
+        <h3>灵感顾问 · 提示词设置</h3>
+        <textarea id="promptInput" placeholder="自定义 AI 提示词..."></textarea>
+        <div class="modal-actions">
+            <button onclick="closePromptSettings()">取消</button>
+            <button class="btn-save" onclick="savePrompt()">保存提示词</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="js/api.js"></script>
+<script src="js/chat.js"></script>
+</body>
+</html>

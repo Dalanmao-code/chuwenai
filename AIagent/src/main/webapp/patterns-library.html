@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>楚镜AI — 纹样库</title>
+    <link rel="stylesheet" href="css/style.css?v=3">
+</head>
+<body>
+<div class="chat-layout">
+    <!-- 左侧边栏 -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-brand"><img src="images/logo.png" alt="" class="sidebar-logo-inline" width="30" height="30">楚镜 AI</div>
+            <small>非遗纹样 · 传承创新</small>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="user-avatar" id="sidebarAvatar"></div>
+            <div class="user-info">
+                <div class="name" id="sidebarName"></div>
+                <span class="role-tag">用户</span>
+            </div>
+        </div>
+
+        <!-- 导航菜单 -->
+        <div class="sidebar-nav">
+            <a class="nav-item" href="home.html">
+                <span class="nav-icon">&#127968;</span> 主页
+            </a>
+            <div class="nav-item active">
+                <span class="nav-icon">&#128218;</span> 纹样库
+            </div>
+            <a class="nav-item" href="chat.html">
+                <span class="nav-icon">&#128172;</span> 灵感顾问
+            </a>
+            <a class="nav-item" href="patterns.html">
+                <span class="nav-icon">&#127912;</span> AI设计师
+            </a>
+            <a class="nav-item" href="ai-video.html">
+                <span class="nav-icon">&#127916;</span> AI视频
+            </a>
+            <a class="nav-item" href="free-create.html">
+                <span class="nav-icon">&#127917;</span> 自由创作
+            </a>
+            <a class="nav-item" href="product-showcase.html">
+                <span class="nav-icon">&#128230;</span> 产品展示
+            </a>
+            <a class="nav-item" href="member-center.html">
+                <span class="nav-icon">&#128100;</span> 会员中心
+            </a>
+        </div>
+
+        <div class="sidebar-footer" style="margin-top:auto;">
+            <button onclick="handleLogout()">&#10149; 退出</button>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main-chat">
+        <div class="chat-header">
+            <div class="chat-header-left">
+                <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+                <span class="conv-title-header">纹样库</span>
+                <span id="patternCount" style="font-size:12px;color:var(--text-light);font-family:var(--font-heading);"></span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:12px;color:var(--text-light);font-family:var(--font-heading);letter-spacing:1px;" id="categoryLabel">全部类别</span>
+            </div>
+        </div>
+
+        <div class="library-layout">
+            <!-- 类别选择面板 -->
+            <div class="category-panel" id="categoryPanel">
+                <div class="category-panel-title">纹样类别</div>
+                <div class="category-list" id="categoryList">
+                    <div class="category-item loading">加载中...</div>
+                </div>
+            </div>
+
+            <!-- 纹样展示区 -->
+            <div class="library-grid-wrap" id="libraryGridWrap">
+                <div class="library-grid" id="patternGrid">
+                    <div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--text-light);">
+                        <div style="font-size:48px;margin-bottom:16px;">&#128218;</div>
+                        <p style="font-family:var(--font-heading);font-size:15px;letter-spacing:2px;">加载纹样库中...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 纹样详情浮层 -->
+<div class="lightbox-overlay" id="lightboxOverlay" onclick="closeLightbox(event)">
+    <div class="lightbox-container" onclick="event.stopPropagation()">
+        <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+        <div class="lightbox-image-wrap">
+            <img id="lightboxImage" src="" alt="">
+        </div>
+        <div class="lightbox-info">
+            <h3 id="lightboxName"></h3>
+            <div class="lightbox-meta">
+                <span class="lightbox-category" id="lightboxCategory"></span>
+                <span class="lightbox-designer" id="lightboxDesigner"></span>
+            </div>
+            <a id="lightboxDownload" class="lightbox-download-btn" download>下载纹样</a>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="js/api.js"></script>
+<script>
+var allPatterns = [];
+var categories = [];
+var currentCategory = '';
+
+(async function init() {
+    try {
+        var user = await API.getUserInfo();
+        document.getElementById('sidebarName').textContent = user.displayName || user.username;
+        var avatar = document.getElementById('sidebarAvatar');
+        avatar.style.background = user.avatarColor || '#C53D43';
+        avatar.textContent = (user.displayName || user.username).charAt(0).toUpperCase();
+        await loadData();
+    } catch (e) {
+        window.location.href = 'index.html';
+    }
+})();
+
+async function loadData() {
+    try {
+        var results = await Promise.all([
+            API.getPatternCategories(),
+            API.getPatterns()
+        ]);
+        categories = results[0];
+        allPatterns = results[1];
+        renderCategories();
+        renderPatterns();
+    } catch (e) {
+        showToast('加载纹样库失败: ' + e.message, 'error');
+    }
+}
+
+function renderCategories() {
+    var list = document.getElementById('categoryList');
+    var total = allPatterns.length;
+    var html = '<div class="category-item' + (currentCategory === '' ? ' active' : '') +
+        '" onclick="selectCategory(\'\')">' +
+        '<span class="category-name">全部纹样</span>' +
+        '<span class="category-count">' + total + '</span>' +
+        '</div>';
+
+    for (var i = 0; i < categories.length; i++) {
+        var cat = categories[i];
+        html += '<div class="category-item' + (currentCategory === cat.name ? ' active' : '') +
+            '" onclick="selectCategory(\'' + escapeHtmlAttr(cat.name) + '\')">' +
+            '<span class="category-name">' + escapeHtml(cat.name) + '</span>' +
+            '<span class="category-count">' + cat.count + '</span>' +
+            '</div>';
+    }
+    list.innerHTML = html;
+}
+
+function selectCategory(cat) {
+    currentCategory = cat;
+    document.getElementById('categoryLabel').textContent = cat || '全部类别';
+    renderCategories();
+    renderPatterns();
+    document.getElementById('libraryGridWrap').scrollTop = 0;
+}
+
+function renderPatterns() {
+    var grid = document.getElementById('patternGrid');
+    var filtered = currentCategory
+        ? allPatterns.filter(function(p) { return p.category === currentCategory; })
+        : allPatterns;
+
+    document.getElementById('patternCount').textContent = '共 ' + filtered.length + ' 个纹样';
+
+    if (filtered.length === 0) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text-light);font-family:var(--font-heading);letter-spacing:2px;">该类别暂无纹样</div>';
+        return;
+    }
+
+    var html = '';
+    for (var i = 0; i < filtered.length; i++) {
+        var p = filtered[i];
+        html +=
+            '<div class="library-card" onclick="openLightbox(\'' + escapeHtmlAttr(p.path) + '\',\'' + escapeHtmlAttr(p.name) + '\',\'' + escapeHtmlAttr(p.category) + '\',\'' + escapeHtmlAttr(p.designer) + '\')">' +
+            '<div class="library-card-img">' +
+            '<img src="' + BASE + p.path + '" alt="' + escapeHtmlAttr(p.name) + '" loading="lazy" decoding="async">' +
+            '</div>' +
+            '<div class="library-card-body">' +
+            '<div class="library-card-name">' + escapeHtml(p.name) + '</div>' +
+            (p.designer ? '<div class="library-card-designer">设计者：' + escapeHtml(p.designer) + '</div>' : '') +
+            '</div>' +
+            '</div>';
+    }
+    grid.innerHTML = html;
+}
+
+function openLightbox(path, name, category, designer) {
+    document.getElementById('lightboxImage').src = BASE + path;
+    document.getElementById('lightboxName').textContent = name;
+    document.getElementById('lightboxCategory').textContent = category;
+    var de = document.getElementById('lightboxDesigner');
+    if (designer) {
+        de.textContent = '设计者：' + designer;
+        de.style.display = '';
+    } else {
+        de.style.display = 'none';
+    }
+    var dl = document.getElementById('lightboxDownload');
+    dl.href = BASE + path;
+    dl.download = name + path.substring(path.lastIndexOf('.'));
+    document.getElementById('lightboxOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox(e) {
+    if (e && e.target !== document.getElementById('lightboxOverlay')) return;
+    document.getElementById('lightboxOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        document.getElementById('lightboxOverlay').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+});
+
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+}
+
+async function handleLogout() {
+    try { await API.logout(); } catch (e) {}
+    window.location.href = 'index.html';
+}
+
+function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function escapeHtmlAttr(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function showToast(msg, type) {
+    var c = document.getElementById('toastContainer');
+    var t = document.createElement('div');
+    t.className = 'toast ' + (type || 'info');
+    t.textContent = msg;
+    c.appendChild(t);
+    setTimeout(function() { t.remove(); }, 3000);
+}
+</script>
+</body>
+</html>
